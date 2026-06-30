@@ -24,11 +24,12 @@ export const router = createBrowserRouter(
       children: [
         { index: true, element: <Navigate to="/persona" replace /> },
 
-        // --- Dominios (se irán poblando por fase; hoy placeholders) ---
+        // --- Persona (Fase 2) ---
         { path: 'persona', lazy: () => import('@/features/persona/PersonaList') },
-        // { path: 'persona/:id', lazy: () => import('@/features/persona/PersonaDetail') },
-        // { path: 'despacho', lazy: () => import('@/features/despacho/DespachoList') },
-        // ...las 32 rutas de entidad...
+        { path: 'persona/nueva', lazy: () => import('@/features/persona/PersonaForm') },
+        { path: 'persona/:id', lazy: () => import('@/features/persona/PersonaDetail') },
+        { path: 'persona/:id/editar', lazy: () => import('@/features/persona/PersonaForm') },
+        // --- Resto de dominios (se irán poblando): despacho, cuadrilla, entrega-epp... ---
 
         // --- BI (Fase 6) ---
         {

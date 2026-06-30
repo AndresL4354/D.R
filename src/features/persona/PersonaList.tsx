@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Loader2, Plus } from 'lucide-react';
 import { usePersonas } from './hooks';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Input } from '@/components/ui/input';
@@ -13,6 +14,7 @@ export function Component() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const debounced = useDebounce(search);
+  const navigate = useNavigate();
 
   const { data, isLoading, isError } = usePersonas({
     search: debounced,
@@ -26,17 +28,24 @@ export function Component() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">Personas</h1>
-        <Input
-          placeholder="Buscar por nombre…"
-          className="max-w-xs"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
-          }}
-        />
+        <div className="flex items-center gap-2">
+          <Input
+            placeholder="Buscar por nombre…"
+            className="w-64"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
+          />
+          <Button asChild>
+            <Link to="/persona/nueva">
+              <Plus /> Nueva
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-lg border">
@@ -72,7 +81,11 @@ export function Component() {
               </tr>
             )}
             {rows.map((p) => (
-              <tr key={p.id} className="border-b last:border-0 hover:bg-muted/30">
+              <tr
+                key={p.id}
+                onClick={() => navigate(`/persona/${p.id}`)}
+                className="cursor-pointer border-b last:border-0 hover:bg-muted/30"
+              >
                 <td className="px-4 py-2">{p.nombre_completo}</td>
                 <td className="px-4 py-2">{formatRut(p.numero_id)}</td>
                 <td className="px-4 py-2">{p.empresa}</td>

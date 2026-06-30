@@ -1,7 +1,6 @@
 // =============================================================================
 // database.types.ts — GENERADO desde el esquema real de Supabase (D.R Demo).
-// Regenerar con:  npm run gen:types   (o vía Management API /types/typescript)
-// NO editar a mano. 83 tablas de docnomina + perfil.
+// Regenerar con: npm run gen:types. NO editar a mano.
 // =============================================================================
 
 export type Json =
@@ -1637,7 +1636,7 @@ export type Database = {
           foto?: string | null
           genero?: string | null
           gratificacion?: number | null
-          id: number
+          id?: number
           id_estado?: number | null
           is_coach?: boolean | null
           licencia_conduccion?: string | null
