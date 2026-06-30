@@ -26,6 +26,64 @@ export async function listPersonas(params: ListPersonasParams) {
   return { rows: data ?? [], total: count ?? 0 };
 }
 
+// ---- Listado con filtros (RPC personas_listado — clon de personasFiltro) ----
+export interface PersonaListFilters {
+  rut?: string;
+  nombre?: string;
+  estado?: string | null;
+  comuna?: string | null;
+  empresa?: string | null;
+  idCargo?: number | null;
+  idFaena?: number | null;
+}
+
+export interface PersonaListRow {
+  id: number;
+  num_id: string | null;
+  nombre_completo: string | null;
+  cargos: string;
+  comuna: string | null;
+  telefono: string | null;
+  servicio: string;
+  estado_persona: string | null;
+}
+
+export async function listPersonasFiltradas(f: PersonaListFilters, page: number, size: number) {
+  const { data, error } = await supabase.rpc('personas_listado' as never, {
+    p_rut: f.rut?.trim() || null,
+    p_nombre: f.nombre?.trim() || null,
+    p_estado: f.estado || null,
+    p_comuna: f.comuna || null,
+    p_empresa: f.empresa || null,
+    p_id_cargo: f.idCargo ?? null,
+    p_id_faena: f.idFaena ?? null,
+    p_limit: size,
+    p_offset: page * size,
+  } as never);
+  if (error) throw error;
+  const rows = (data ?? []) as Array<PersonaListRow & { total: number }>;
+  const total = rows.length ? Number(rows[0]!.total) : 0;
+  return { rows: rows as PersonaListRow[], total };
+}
+
+export async function getPersonaComunas(): Promise<string[]> {
+  const { data, error } = await supabase.rpc('persona_comunas' as never);
+  if (error) throw error;
+  return ((data ?? []) as Array<{ comuna: string }>).map((r) => r.comuna).filter(Boolean);
+}
+
+export async function getCargosCatalogo(): Promise<{ id: number; nombre: string }[]> {
+  const { data, error } = await supabase.from('cargo').select('id, nombre').order('nombre');
+  if (error) throw error;
+  return (data ?? []).map((c) => ({ id: c.id as number, nombre: (c.nombre as string | null) ?? '' }));
+}
+
+export async function getFaenasCatalogo(): Promise<{ id: number; nombre: string }[]> {
+  const { data, error } = await supabase.from('faena').select('id, nombre').order('nombre');
+  if (error) throw error;
+  return (data ?? []).map((c) => ({ id: c.id as number, nombre: (c.nombre as string | null) ?? '' }));
+}
+
 export async function getPersona(id: number): Promise<Persona | null> {
   const { data, error } = await supabase.from('persona').select('*').eq('id', id).maybeSingle();
   if (error) throw error;

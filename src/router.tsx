@@ -27,6 +27,7 @@ export const router = createBrowserRouter(
         // --- Persona (Fase 2) ---
         { path: 'persona', lazy: () => import('@/features/persona/PersonaList') },
         { path: 'persona/nueva', lazy: () => import('@/features/persona/PersonaForm') },
+        { path: 'upload-personas', element: <div className="p-6">Carga masiva de personas (Fase 5)</div> },
         { path: 'persona/:id', lazy: () => import('@/features/persona/PersonaDetail') },
         { path: 'persona/:id/editar', lazy: () => import('@/features/persona/PersonaForm') },
         // Sub-páginas de la ficha (placeholders — documentos_persona ya es legible vía RLS)

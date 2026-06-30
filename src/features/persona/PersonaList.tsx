@@ -1,72 +1,305 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, Loader2, Pencil, Plus } from 'lucide-react';
-import { usePersonas } from './hooks';
-import { useDebounce } from '@/hooks/useDebounce';
-import { formatRut } from '@/lib/utils';
+import {
+  ArrowLeft,
+  ClipboardList,
+  Download,
+  Eraser,
+  Eye,
+  Filter,
+  Loader2,
+  MoreVertical,
+  Pencil,
+  Plus,
+  QrCode,
+  Trash2,
+  Upload,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { usePersonaFiltrosCatalogos, usePersonasFiltradas } from './hooks';
+import type { PersonaListFilters } from './api';
+import { useRole } from '@/features/auth/useRole';
 
 const PAGE_SIZE = 20;
+const ESTADOS = [
+  'Registrado',
+  'Activo',
+  'En Revisión',
+  'Inactivo',
+  'Observación',
+  'Desvinculado',
+  'Renuncia',
+  'Licencia Médica',
+];
 
-/** Exportado como `Component` para el `lazy` del router. */
-export function Component() {
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(0);
-  const debounced = useDebounce(search);
+interface Draft {
+  rut: string;
+  nombre: string;
+  estado: string;
+  comuna: string;
+  idCargo: string;
+  idFaena: string;
+}
+const EMPTY: Draft = { rut: '', nombre: '', estado: '', comuna: '', idCargo: '', idFaena: '' };
+
+/** Menú kebab de acciones por fila (clon del mat-menu real). */
+function RowActionsMenu({ id, canEdit, canAdmin }: { id: number; canEdit: boolean; canAdmin: boolean }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, []);
+  const go = (to: string) => {
+    setOpen(false);
+    navigate(to);
+  };
+  return (
+    <div className="relative inline-block" ref={ref}>
+      <button className="btn-icon btn-icon--primary" title="Acciones" onClick={() => setOpen((o) => !o)}>
+        <MoreVertical size={16} />
+      </button>
+      {open && (
+        <div className="app-navbar__dropdown app-navbar__dropdown--end" style={{ marginTop: 4 }}>
+          {canEdit && (
+            <button className="app-navbar__dropdown-item" onClick={() => go(`/persona/${id}`)}>
+              <Eye size={16} /> <span>Ver</span>
+            </button>
+          )}
+          <button className="app-navbar__dropdown-item" onClick={() => go(`/persona/${id}/evaluaciones`)}>
+            <ClipboardList size={16} /> <span>Ver evaluaciones</span>
+          </button>
+          {canEdit && (
+            <button className="app-navbar__dropdown-item" onClick={() => go(`/persona/${id}/editar`)}>
+              <Pencil size={16} /> <span>Editar</span>
+            </button>
+          )}
+          {canAdmin && (
+            <button
+              className="app-navbar__dropdown-item"
+              onClick={() => {
+                setOpen(false);
+                toast.info('Eliminar persona: disponible al portar la mutación (Fase 2/3).');
+              }}
+            >
+              <Trash2 size={16} /> <span>Eliminar</span>
+            </button>
+          )}
+          {canAdmin && (
+            <button
+              className="app-navbar__dropdown-item"
+              onClick={() => {
+                setOpen(false);
+                toast.info('Generar QR: disponible en Fase 5.');
+              }}
+            >
+              <QrCode size={16} /> <span>Generar QR</span>
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
-  const { data, isLoading, isError } = usePersonas({ search: debounced, page, size: PAGE_SIZE });
+/** Exportado como `Component` para el `lazy` del router. Clon de persona.component.html (list). */
+export function Component() {
+  const navigate = useNavigate();
+  const { hasAnyRole } = useRole();
+  const [draft, setDraft] = useState<Draft>(EMPTY);
+  const [applied, setApplied] = useState<PersonaListFilters>({});
+  const [page, setPage] = useState(0);
+
+  const { data, isLoading, isError } = usePersonasFiltradas(applied, page, PAGE_SIZE);
+  const { data: cat } = usePersonaFiltrosCatalogos();
+
   const total = data?.total ?? 0;
   const rows = data?.rows ?? [];
   const lastPage = Math.max(0, Math.ceil(total / PAGE_SIZE) - 1);
   const fromN = total === 0 ? 0 : page * PAGE_SIZE + 1;
   const toN = Math.min(total, (page + 1) * PAGE_SIZE);
 
+  const canUpload = hasAnyRole(['ROLE_ADMIN', 'ENCARGADO_RRHH', 'VALIDADOR_RRHH']);
+  const canCreate = hasAnyRole(['ROLE_ADMIN', 'VALIDADOR_RRHH', 'ENCARGADO_RRHH']);
+  const canDescargar = hasAnyRole(['ROLE_ADMIN', 'OPERACIONES', 'ENCARGADO_RRHH', 'VALIDADOR_RRHH']);
+  const canEdit = hasAnyRole(['ROLE_ADMIN', 'VALIDADOR_RRHH', 'ENCARGADO_RRHH']);
+  const canAdmin = hasAnyRole(['ROLE_ADMIN', 'SUPERADMINISTRADOR', 'SUPERADMINISTRADOR BP']);
+
+  const apply = () => {
+    setApplied({
+      rut: draft.rut,
+      nombre: draft.nombre,
+      estado: draft.estado || null,
+      comuna: draft.comuna || null,
+      idCargo: draft.idCargo ? Number(draft.idCargo) : null,
+      idFaena: draft.idFaena ? Number(draft.idFaena) : null,
+    });
+    setPage(0);
+  };
+  const clear = () => {
+    setDraft(EMPTY);
+    setApplied({});
+    setPage(0);
+  };
+  const onEnter = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') apply();
+  };
+
   return (
     <div>
+      <ul className="app-breadcrumb">
+        <li className="active">Personas</li>
+      </ul>
+
       <div className="app-page-header">
         <div className="app-page-header__main">
           <div>
             <h1 className="app-page-title">Personas</h1>
-            <p className="app-page-subtitle">{total} registros</p>
+            <p className="app-page-subtitle">
+              Listado de personas registradas
+              {total > 0 && (
+                <>
+                  {' '}
+                  · <strong>{total}</strong> resultados
+                </>
+              )}
+            </p>
           </div>
         </div>
         <div className="app-page-header__actions">
-          <Link to="/persona/nueva" className="btn btn-primary">
-            <Plus size={16} /> Nueva persona
-          </Link>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate(-1)}>
+            <ArrowLeft size={16} /> Volver
+          </button>
+          {canUpload && (
+            <Link to="/upload-personas" className="btn btn-secondary">
+              <Upload size={16} /> Cargue Personas
+            </Link>
+          )}
+          {canCreate && (
+            <Link to="/persona/nueva" className="btn btn-primary">
+              <Plus size={16} /> Nueva persona
+            </Link>
+          )}
         </div>
       </div>
 
-      <div className="app-toolbar">
-        <div className="app-toolbar__filters">
-          <input
-            className="app-field__control"
-            style={{ maxWidth: 300 }}
-            placeholder="Buscar por nombre…"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(0);
-            }}
-          />
+      {/* Filtros */}
+      <div className="app-card">
+        <div className="app-card-header">
+          <Filter className="app-card-header__icon" size={18} />
+          <h4>Filtros</h4>
+        </div>
+        <div className="app-card-body">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <input
+              className="app-field__control"
+              placeholder="RUT"
+              maxLength={10}
+              value={draft.rut}
+              onChange={(e) => setDraft({ ...draft, rut: e.target.value })}
+              onKeyDown={onEnter}
+            />
+            <input
+              className="app-field__control"
+              placeholder="Nombre completo"
+              maxLength={150}
+              value={draft.nombre}
+              onChange={(e) => setDraft({ ...draft, nombre: e.target.value })}
+              onKeyDown={onEnter}
+            />
+            <select
+              className="app-field__control"
+              value={draft.estado}
+              onChange={(e) => setDraft({ ...draft, estado: e.target.value })}
+            >
+              <option value="">Estado</option>
+              {ESTADOS.map((es) => (
+                <option key={es} value={es}>
+                  {es}
+                </option>
+              ))}
+            </select>
+            <select
+              className="app-field__control"
+              value={draft.idCargo}
+              onChange={(e) => setDraft({ ...draft, idCargo: e.target.value })}
+            >
+              <option value="">Cargo</option>
+              {(cat?.cargos ?? []).map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre}
+                </option>
+              ))}
+            </select>
+            <select
+              className="app-field__control"
+              value={draft.idFaena}
+              onChange={(e) => setDraft({ ...draft, idFaena: e.target.value })}
+            >
+              <option value="">Faena</option>
+              {(cat?.faenas ?? []).map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.nombre}
+                </option>
+              ))}
+            </select>
+            <select
+              className="app-field__control"
+              value={draft.comuna}
+              onChange={(e) => setDraft({ ...draft, comuna: e.target.value })}
+            >
+              <option value="">Ciudad</option>
+              {(cat?.comunas ?? []).map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="app-filter-actions">
+            <button type="button" className="btn btn-secondary" onClick={clear}>
+              <Eraser size={16} /> Limpiar
+            </button>
+            <button type="button" className="btn btn-primary" onClick={apply}>
+              <Filter size={16} /> Filtrar
+            </button>
+            {canDescargar && (
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => toast.info('Exportar a Excel: disponible en Fase 5.')}
+              >
+                <Download size={16} /> Descargar
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* Tabla */}
       <div className="app-table-wrap">
         <table className="app-table app-table--hover">
           <thead>
             <tr>
-              <th>Nombre</th>
-              <th>RUT</th>
-              <th>Empresa</th>
-              <th>Email</th>
-              <th style={{ width: 92 }} />
+              <th>Número identificación</th>
+              <th>Nombre completo</th>
+              <th>Cargos</th>
+              <th>Ciudad</th>
+              <th>Teléfono</th>
+              <th>Servicio</th>
+              <th>Estado</th>
+              <th style={{ width: 56 }} />
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={5}>
+                <td colSpan={8}>
                   <div className="app-empty-state">
                     <Loader2 className="mx-auto animate-spin" size={22} />
                   </div>
@@ -75,41 +308,38 @@ export function Component() {
             )}
             {isError && (
               <tr>
-                <td colSpan={5}>
+                <td colSpan={8}>
                   <div className="app-empty-state" style={{ color: 'var(--app-color-danger)' }}>
-                    Error al cargar personas (¿credenciales / permisos?).
+                    Error al cargar personas (¿permisos / sesión?).
                   </div>
                 </td>
               </tr>
             )}
             {!isLoading && !isError && rows.length === 0 && (
               <tr>
-                <td colSpan={5}>
+                <td colSpan={8}>
                   <div className="app-empty-state">
-                    <p className="app-empty-state__title">Sin resultados</p>
+                    <p className="app-empty-state__title">No se encontraron personas</p>
+                    Ajusta los filtros o crea una nueva.
                   </div>
                 </td>
               </tr>
             )}
             {rows.map((p) => (
-              <tr key={p.id} onClick={() => navigate(`/persona/${p.id}`)} style={{ cursor: 'pointer' }}>
-                <td>{p.nombre_completo}</td>
-                <td>{formatRut(p.numero_id)}</td>
-                <td>{p.empresa}</td>
-                <td>{p.email}</td>
-                <td onClick={(e) => e.stopPropagation()}>
-                  <div className="app-row-actions">
-                    <button className="btn-icon" title="Ver" onClick={() => navigate(`/persona/${p.id}`)}>
-                      <Eye size={16} />
-                    </button>
-                    <button
-                      className="btn-icon btn-icon--primary"
-                      title="Editar"
-                      onClick={() => navigate(`/persona/${p.id}/editar`)}
-                    >
-                      <Pencil size={16} />
-                    </button>
-                  </div>
+              <tr key={p.id}>
+                <td>{p.num_id}</td>
+                <td>
+                  <Link to={`/persona/${p.id}`} className="font-semibold text-foreground hover:underline">
+                    {p.nombre_completo}
+                  </Link>
+                </td>
+                <td>{p.cargos}</td>
+                <td>{p.comuna}</td>
+                <td>{p.telefono}</td>
+                <td>{p.servicio}</td>
+                <td>{p.estado_persona}</td>
+                <td>
+                  <RowActionsMenu id={p.id} canEdit={canEdit} canAdmin={canAdmin} />
                 </td>
               </tr>
             ))}

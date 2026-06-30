@@ -1,13 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createPersona,
+  getCargosCatalogo,
+  getFaenasCatalogo,
   getPersona,
   getPersonaCargos,
+  getPersonaComunas,
   getPersonaEmpresas,
   getTiposDocPersona,
   listPersonas,
+  listPersonasFiltradas,
   updatePersona,
   type ListPersonasParams,
+  type PersonaListFilters,
 } from './api';
 import type { PersonaInput } from './schema';
 
@@ -16,6 +21,31 @@ export function usePersonas(params: ListPersonasParams) {
     queryKey: ['persona', 'list', params],
     queryFn: () => listPersonas(params),
     placeholderData: (prev) => prev,
+  });
+}
+
+/** Listado con filtros (RPC personas_listado). */
+export function usePersonasFiltradas(filters: PersonaListFilters, page: number, size: number) {
+  return useQuery({
+    queryKey: ['persona', 'listado', filters, page, size],
+    queryFn: () => listPersonasFiltradas(filters, page, size),
+    placeholderData: (prev) => prev,
+  });
+}
+
+/** Catálogos de los filtros del listado (comunas, cargos, faenas). */
+export function usePersonaFiltrosCatalogos() {
+  return useQuery({
+    queryKey: ['persona', 'filtros-catalogos'],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const [comunas, cargos, faenas] = await Promise.all([
+        getPersonaComunas(),
+        getCargosCatalogo(),
+        getFaenasCatalogo(),
+      ]);
+      return { comunas, cargos, faenas };
+    },
   });
 }
 
