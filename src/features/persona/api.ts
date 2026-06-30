@@ -32,21 +32,7 @@ export async function updatePersona(p: TablesUpdate<'persona'> & { id: number })
   if (error) throw error;
 }
 
-/**
- * Ejemplo de RPC de negocio (de los 40+ de persona.service.ts).
- * Mapea a una función Postgres expuesta vía .rpc() (§6.1 / §10).
- * Se activará cuando exista la función en la base (Fase 2).
- */
-export async function asignarPersonaProyecto(input: {
-  idPersona: number;
-  idProyecto: number;
-  cargo: string;
-}) {
-  const { data, error } = await supabase.rpc('asignar_persona_proyecto', {
-    p_id_persona: input.idPersona,
-    p_id_proyecto: input.idProyecto,
-    p_cargo: input.cargo,
-  });
-  if (error) throw error;
-  return data;
-}
+// Los RPC de negocio (los 40+ de persona.service.ts: asignarPersonaProyecto,
+// guardarBloqueo, oficializar, etc.) se portan en Fase 2 como funciones Postgres
+// expuestas vía supabase.rpc(...), y aparecerán tipados en database.types.ts al
+// regenerar (npm run gen:types) una vez creados.
