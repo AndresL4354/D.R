@@ -45,6 +45,17 @@ export const router = createBrowserRouter(
         // --- Mochila SPDC (Fase 3, dominio ALTA) ---
         { path: 'mochila-spdc', lazy: () => import('@/features/mochila/MochilaList') },
         { path: 'mochila-spdc/:id', lazy: () => import('@/features/mochila/MochilaDetail') },
+        { path: 'epp', lazy: () => import('@/features/epp/EppIndex') },
+
+        // --- Evaluaciones (Fase 4) ---
+        { path: 'evaluacion', lazy: () => import('@/features/evaluacion/EvaluacionList') },
+        { path: 'evaluacion/:id', lazy: () => import('@/features/evaluacion/EvaluacionDetail') },
+
+        // --- Logística (Fase 4) ---
+        { path: 'logistica', lazy: () => import('@/features/logistica/LogisticaIndex') },
+        { path: 'pasaje', lazy: () => import('@/features/logistica/PasajeList') },
+        { path: 'citacion', lazy: () => import('@/features/logistica/CitacionList') },
+        { path: 'hospedaje', lazy: () => import('@/features/logistica/HospedajeList') },
         // --- Configuración (Fase 4: catálogos) ---
         { path: 'config', lazy: () => import('@/features/config/ConfigIndex') },
         { path: 'faena', lazy: () => import('@/features/config/FaenaList') },

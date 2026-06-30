@@ -9,8 +9,9 @@ const links = [
   { to: '/proyecto', label: 'Servicios' },
   { to: '/persona', label: 'Personas' },
   { to: '/despacho', label: 'Despachos' },
-  { to: '/entrega-epp', label: 'Entregas' },
-  { to: '/mochila-spdc', label: 'Mochilas' },
+  { to: '/epp', label: 'EPP' },
+  { to: '/logistica', label: 'Logística' },
+  { to: '/evaluacion', label: 'Evaluaciones' },
   { to: '/config', label: 'Configuración' },
 ];
 
