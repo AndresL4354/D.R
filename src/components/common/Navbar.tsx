@@ -11,7 +11,7 @@ const links = [
   { to: '/despacho', label: 'Despachos' },
   { to: '/entrega-epp', label: 'Entregas' },
   { to: '/mochila-spdc', label: 'Mochilas' },
-  { to: '/dashboard', label: 'Dashboard' },
+  { to: '/config', label: 'Configuración' },
 ];
 
 export function Navbar() {
