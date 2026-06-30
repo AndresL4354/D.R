@@ -30,6 +30,10 @@ export const router = createBrowserRouter(
         { path: 'persona/:id', lazy: () => import('@/features/persona/PersonaDetail') },
         { path: 'persona/:id/editar', lazy: () => import('@/features/persona/PersonaForm') },
 
+        // --- Servicios / Proyecto (Fase 3) ---
+        { path: 'proyecto', lazy: () => import('@/features/proyecto/ProyectoList') },
+        { path: 'proyecto/:id', lazy: () => import('@/features/proyecto/ProyectoDetail') },
+
         // --- Despacho (Fase 3) ---
         { path: 'despacho', lazy: () => import('@/features/despacho/DespachoList') },
         { path: 'despacho/:id', lazy: () => import('@/features/despacho/DespachoDetail') },

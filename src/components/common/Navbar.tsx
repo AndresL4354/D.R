@@ -6,6 +6,7 @@ import { useAuth } from '@/features/auth/useAuth';
 import { cn } from '@/lib/utils';
 
 const links = [
+  { to: '/proyecto', label: 'Servicios' },
   { to: '/persona', label: 'Personas' },
   { to: '/despacho', label: 'Despachos' },
   { to: '/dashboard', label: 'Dashboard' },
