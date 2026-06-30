@@ -1,11 +1,25 @@
 import { useQuery } from '@tanstack/react-query';
-import { getPersonalProyecto, getProyecto, listProyectos, type ListProyectosParams } from './api';
+import {
+  getPersonalProyecto,
+  getProyecto,
+  getProyectoFaenas,
+  listProyectos,
+  type ListProyectosParams,
+} from './api';
 
 export function useProyectos(params: ListProyectosParams) {
   return useQuery({
     queryKey: ['proyecto', 'list', params],
     queryFn: () => listProyectos(params),
     placeholderData: (prev) => prev,
+  });
+}
+
+export function useProyectoFaenas() {
+  return useQuery({
+    queryKey: ['proyecto', 'faenas'],
+    queryFn: getProyectoFaenas,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
