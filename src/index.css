@@ -596,3 +596,280 @@
   padding-top: var(--app-space-4);
   border-top: 1px solid var(--app-border);
 }
+
+/* =============================================================================
+   Navbar — clon exacto de layouts/navbar/navbar.component.scss (docnomina v2).
+   Iconos = PNGs reales en /nav/*. Top-level en blanco vía filter; dropdown en rojo.
+   ============================================================================= */
+.app-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  height: 60px;
+  padding: 0 var(--app-space-4);
+  background: var(--app-color-brand);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: var(--app-shadow);
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-3);
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+.app-navbar__brand {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  margin-right: var(--app-space-3);
+  flex-shrink: 0;
+}
+.app-navbar__logo {
+  display: inline-block;
+  width: 140px;
+  height: 36px;
+  background: url('/nav/logo.png') no-repeat left center;
+  background-size: contain;
+}
+.app-navbar__collapse {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-3);
+  justify-content: flex-end;
+  min-width: 0;
+}
+.app-navbar__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.app-navbar__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 60px;
+}
+.app-navbar__link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--app-radius);
+  color: #fff;
+  font-size: var(--app-fs-md);
+  font-weight: 600;
+  transition: background-color var(--app-transition), color var(--app-transition);
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  background: transparent;
+  border: 0;
+}
+.app-navbar__link:hover {
+  background-color: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+.app-navbar__link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.45);
+}
+.app-navbar__item.active > .app-navbar__link,
+.app-navbar__item.show > .app-navbar__link {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+}
+.app-navbar__item.active::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 0;
+  height: 3px;
+  background: #fff;
+  border-radius: 3px 3px 0 0;
+}
+.app-navbar__label {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.app-navbar__caret {
+  margin-left: 2px;
+  opacity: 0.85;
+  transition: transform var(--app-transition);
+}
+.app-navbar__caret--open {
+  transform: rotate(180deg);
+}
+.app-navbar__icon {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  vertical-align: middle;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: brightness(0) invert(1);
+  flex-shrink: 0;
+}
+.app-navbar__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  min-width: 220px;
+  padding: 6px;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow-lg);
+  list-style: none;
+  z-index: 1040;
+}
+.app-navbar__dropdown--end {
+  left: auto;
+  right: 0;
+}
+.app-navbar__dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-3);
+  padding: 8px 12px;
+  border-radius: var(--app-radius-sm);
+  color: var(--app-text);
+  font-size: var(--app-fs-md);
+  font-weight: 500;
+  transition: background-color var(--app-transition), color var(--app-transition);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.app-navbar__dropdown-item:hover,
+.app-navbar__dropdown-item:focus {
+  background: var(--app-color-brand-soft);
+  color: var(--app-color-brand);
+}
+.app-navbar__dropdown-item.active {
+  background: var(--app-color-brand-tint);
+  color: var(--app-color-brand);
+}
+.app-navbar__dropdown-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  vertical-align: middle;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  flex-shrink: 0;
+}
+.app-navbar__alerts {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-2);
+}
+.app-navbar__alert {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: background-color var(--app-transition), border-color var(--app-transition);
+}
+.app-navbar__alert:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.app-navbar__alert:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.45);
+}
+.app-navbar__alert-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: brightness(0) invert(1);
+}
+.app-navbar__alert-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--app-radius-pill);
+  background: #fff;
+  color: var(--app-color-brand);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 0 0 2px var(--app-color-brand);
+}
+.app-navbar__alert-badge--warning {
+  background: var(--app-color-warning);
+  color: #fff;
+  box-shadow: 0 0 0 2px var(--app-color-brand);
+}
+.app-navbar__alert-badge--danger {
+  background: #fff;
+  color: var(--app-color-brand);
+}
+.app-navbar__alert-badge:empty {
+  display: none;
+}
+.app-navbar__profile {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--app-space-2);
+}
+.app-navbar__profile-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: brightness(0) invert(1);
+}
+
+/* ----- Icon image map (PNGs reales de docnomina en /public/nav) ----- */
+.logo-iconproyectos { background-image: url('/nav/servicios.png'); }
+.logo-iconpersonas { background-image: url('/nav/personas.png'); }
+.logo-iconconfiguraciones { background-image: url('/nav/configuracion.png'); }
+.logo-reporta { background-image: url('/nav/reporta.png'); }
+.logo-iconperfil { background-image: url('/nav/perfil.png'); }
+.logo-img-new { background-image: url('/nav/campana.png'); }
+.logo-servicios { background-image: url('/nav/d-servicios.png'); }
+.logo-despachos { background-image: url('/nav/d-despachos.png'); }
+.logo-entregas { background-image: url('/nav/d-entregas.png'); }
+.logo-reporte-evaluaciones { background-image: url('/nav/d-evaluaciones.png'); }
+.logo-reporte-personas { background-image: url('/nav/d-personas.png'); }
+.logo-reporte-vencimientos { background-image: url('/nav/d-vencimientos.png'); }
+.logo-empresa { background-image: url('/nav/d-empresa.png'); }
+.logo-empresa-cliente { background-image: url('/nav/d-empresa-cliente.png'); }
+.logo-faena { background-image: url('/nav/d-faena.png'); }
+.logo-documento-cargo { background-image: url('/nav/d-documento.png'); }
+.logo-cargo { background-image: url('/nav/d-cargo.png'); }
+.logo-engranes { background-image: url('/nav/d-engranes.png'); }
+.logo-usu { background-image: url('/nav/d-usuarios.png'); }
+.logo-ajustes { background-image: url('/nav/d-ajustes.png'); }
+.logo-pass { background-image: url('/nav/d-contrasena.png'); }
+.logo-sesion { background-image: url('/nav/d-sesion.png'); }

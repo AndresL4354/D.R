@@ -92,6 +92,22 @@ export const router = createBrowserRouter(
             </RequireRole>
           ),
         },
+        // Dashboards de Reportabilidad (Fase 6 — placeholders por ahora)
+        { path: 'dashboard/evaluaciones', element: <div className="p-6">Dashboard Evaluaciones (Fase 6)</div> },
+        { path: 'dashboard/personas', element: <div className="p-6">Dashboard Personas (Fase 6)</div> },
+        { path: 'dashboard/vencimientos', element: <div className="p-6">Dashboard Vencimientos (Fase 6)</div> },
+
+        // Mi perfil / administración de usuarios (Fase 1 — placeholders)
+        {
+          path: 'user-management',
+          element: (
+            <RequireRole roles={['ROLE_ADMIN', 'SUPERADMINISTRADOR', 'SUPERADMINISTRADOR BP']}>
+              <div className="p-6">Gestión de usuarios (Fase 1)</div>
+            </RequireRole>
+          ),
+        },
+        { path: 'account/settings', element: <div className="p-6">Ajustes de cuenta (Fase 1)</div> },
+        { path: 'account/password', element: <div className="p-6">Cambiar contraseña (Fase 1)</div> },
 
         // --- Admin (Fase 1+) ---
         {

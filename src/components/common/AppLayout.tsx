@@ -5,7 +5,7 @@ export function AppLayout() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container py-6">
+      <main className="w-full px-6 py-6 lg:px-10">
         <Outlet />
       </main>
     </div>
