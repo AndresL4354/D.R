@@ -39,3 +39,6 @@ test-results
 # Supabase
 supabase/.branches
 supabase/.temp
+
+# Claude Code config local (no commitear permisos personales)
+.claude/settings.local.json
