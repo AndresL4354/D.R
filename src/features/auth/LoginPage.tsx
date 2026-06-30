@@ -6,13 +6,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -42,11 +36,11 @@ export function LoginPage() {
   });
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-xl">docnomina</CardTitle>
-          <CardDescription>Inicia sesión para continuar</CardDescription>
+        <CardHeader className="items-center text-center">
+          <img src="/logo-docnomina-rojo.png" alt="docnómina" className="h-12 w-auto" />
+          <CardDescription className="pt-1">Inicia sesión para continuar</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4" noValidate>

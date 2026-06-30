@@ -95,7 +95,7 @@ export function Component() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
-      <h1 className="text-2xl font-semibold tracking-tight">
+      <h1 className="text-3xl font-bold tracking-tight">
         {isEdit ? 'Editar persona' : 'Nueva persona'}
       </h1>
 

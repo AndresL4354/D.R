@@ -2,52 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tokens shadcn/ui (baseColor: slate). Reemplazables luego por los tokens
-   del Design System del monorepo si se decide unificar. */
+/* Paleta de docnomina (Design System v2): marca ROJO #dc1f24, fondos crema
+   cálido #faf5ec, cards blancas, texto casi negro #1a1a1a. Mapeada al sistema
+   de CSS vars de shadcn para que cascadee a todos los componentes. */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Fondo crema cálido / texto casi negro */
+    --background: 38 50% 95%; /* #faf5ec */
+    --foreground: 0 0% 10%; /* #1a1a1a */
+
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 0% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+    --popover-foreground: 0 0% 10%;
+
+    /* Marca: rojo docnómina */
+    --primary: 358 75% 49%; /* #dc1f24 */
+    --primary-foreground: 0 0% 100%;
+
+    /* Superficie crema secundaria */
+    --secondary: 40 33% 92%; /* #f5efe2 */
+    --secondary-foreground: 0 0% 10%;
+
+    --muted: 40 30% 93%;
+    --muted-foreground: 220 9% 46%; /* #6b7280 */
+
+    /* Acento: tinte rojo claro (hover/seleccionado) */
+    --accent: 357 70% 95%; /* #fce8e9 */
+    --accent-foreground: 358 75% 49%;
+
+    --destructive: 0 72% 51%; /* #dc2626 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 38 28% 89%; /* #ece7dc */
+    --input: 38 28% 89%;
+    --ring: 358 75% 49%;
+
+    --radius: 0.75rem; /* 12px (cards); md ~10px, sm ~8px */
+
+    /* Tokens semánticos extra (badges de estado) */
+    --success: 142 71% 37%; /* #16a34a */
+    --success-bg: 141 76% 93%; /* #dcfce7 */
+    --warning: 32 95% 44%; /* #d97706 */
+    --warning-bg: 48 96% 89%; /* #fef3c7 */
+    --info: 200 98% 39%; /* #0284c7 */
+    --info-bg: 201 94% 94%; /* #e0f2fe */
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --background: 0 0% 8%;
+    --foreground: 0 0% 96%;
+    --card: 0 0% 11%;
+    --card-foreground: 0 0% 96%;
+    --popover: 0 0% 11%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 358 75% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 16%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 64%;
+    --accent: 358 40% 22%;
+    --accent-foreground: 0 0% 96%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 358 75% 55%;
   }
 }
 
