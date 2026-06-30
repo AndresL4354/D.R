@@ -1,25 +1,24 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Eye, Loader2 } from 'lucide-react';
 import { useDespachos } from './hooks';
 import { useDebounce } from '@/hooks/useDebounce';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
 
 const PAGE_SIZE = 20;
 
-export function EstadoBadge({ estado }: { estado: string | null }) {
-  const color =
+export function EstadoPill({ estado }: { estado: string | null }) {
+  const mod =
     estado === 'ACTIVO'
-      ? 'bg-green-100 text-green-800'
-      : estado === 'FINALIZADO'
-        ? 'bg-slate-100 text-slate-700'
-        : estado === 'INACTIVO'
-          ? 'bg-amber-100 text-amber-800'
-          : 'bg-muted text-muted-foreground';
+      ? 'app-status-pill--success'
+      : estado === 'INACTIVO'
+        ? 'app-status-pill--warning'
+        : estado === 'FINALIZADO'
+          ? 'app-status-pill--info'
+          : '';
   return (
-    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${color}`}>
+    <span className={`app-status-pill ${mod}`}>
+      <span className="app-status-pill__dot" />
       {estado ?? '—'}
     </span>
   );
@@ -37,96 +36,119 @@ export function Component() {
   const total = data?.total ?? 0;
   const proyectos = data?.proyectos;
   const lastPage = Math.max(0, Math.ceil(total / PAGE_SIZE) - 1);
+  const fromN = total === 0 ? 0 : page * PAGE_SIZE + 1;
+  const toN = Math.min(total, (page + 1) * PAGE_SIZE);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">Despachos</h1>
-        <Input
-          placeholder="Buscar por nombre…"
-          className="w-64"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
-          }}
-        />
+    <div>
+      <div className="app-page-header">
+        <div className="app-page-header__main">
+          <div>
+            <h1 className="app-page-title">Despachos</h1>
+            <p className="app-page-subtitle">{total} despachos</p>
+          </div>
+        </div>
       </div>
 
-      <div className="rounded-lg border">
-        <table className="w-full text-sm">
-          <thead className="border-b bg-muted/50 text-left">
+      <div className="app-toolbar">
+        <div className="app-toolbar__filters">
+          <input
+            className="app-field__control"
+            style={{ maxWidth: 300 }}
+            placeholder="Buscar por nombre…"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="app-table-wrap">
+        <table className="app-table app-table--hover">
+          <thead>
             <tr>
-              <th className="px-4 py-2 font-medium">Despacho</th>
-              <th className="px-4 py-2 font-medium">Proyecto</th>
-              <th className="px-4 py-2 font-medium">Estado</th>
-              <th className="px-4 py-2 font-medium">Fecha</th>
+              <th>Despacho</th>
+              <th>Proyecto</th>
+              <th>Estado</th>
+              <th>Fecha</th>
+              <th style={{ width: 60 }} />
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
-                  <Loader2 className="mx-auto size-5 animate-spin" />
+                <td colSpan={5}>
+                  <div className="app-empty-state">
+                    <Loader2 className="mx-auto animate-spin" size={22} />
+                  </div>
                 </td>
               </tr>
             )}
             {isError && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-destructive">
-                  Error al cargar despachos (¿tu rol tiene acceso?).
+                <td colSpan={5}>
+                  <div className="app-empty-state" style={{ color: 'var(--app-color-danger)' }}>
+                    Error al cargar despachos (¿tu rol tiene acceso?).
+                  </div>
                 </td>
               </tr>
             )}
             {!isLoading && !isError && rows.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
-                  Sin resultados.
+                <td colSpan={5}>
+                  <div className="app-empty-state">
+                    <p className="app-empty-state__title">Sin resultados</p>
+                  </div>
                 </td>
               </tr>
             )}
             {rows.map((d) => (
-              <tr
-                key={d.id}
-                onClick={() => navigate(`/despacho/${d.id}`)}
-                className="cursor-pointer border-b last:border-0 hover:bg-muted/30"
-              >
-                <td className="px-4 py-2">{d.nombre_despacho ?? `#${d.id}`}</td>
-                <td className="px-4 py-2">
-                  {d.id_proyecto != null ? (proyectos?.get(d.id_proyecto) ?? d.id_proyecto) : '—'}
+              <tr key={d.id} onClick={() => navigate(`/despacho/${d.id}`)} style={{ cursor: 'pointer' }}>
+                <td>{d.nombre_despacho ?? `#${d.id}`}</td>
+                <td>{d.id_proyecto != null ? (proyectos?.get(d.id_proyecto) ?? d.id_proyecto) : '—'}</td>
+                <td>
+                  <EstadoPill estado={d.estado} />
                 </td>
-                <td className="px-4 py-2">
-                  <EstadoBadge estado={d.estado} />
+                <td>{formatDate(d.fecha_despacho)}</td>
+                <td onClick={(e) => e.stopPropagation()}>
+                  <button className="btn-icon" title="Ver" onClick={() => navigate(`/despacho/${d.id}`)}>
+                    <Eye size={16} />
+                  </button>
                 </td>
-                <td className="px-4 py-2">{formatDate(d.fecha_despacho)}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>{total} despachos</span>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
+      <div className="app-pagination-bar">
+        <div className="app-pagination-bar__meta">
+          Mostrando{' '}
+          <strong>
+            {fromN}–{toN}
+          </strong>{' '}
+          de <strong>{total}</strong>
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button
+            className="btn btn-secondary btn-sm"
             disabled={page <= 0}
             onClick={() => setPage((p) => Math.max(0, p - 1))}
           >
             Anterior
-          </Button>
+          </button>
           <span>
             {page + 1} / {lastPage + 1}
           </span>
-          <Button
-            variant="outline"
-            size="sm"
+          <button
+            className="btn btn-secondary btn-sm"
             disabled={page >= lastPage}
             onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
           >
             Siguiente
-          </Button>
+          </button>
         </div>
       </div>
     </div>

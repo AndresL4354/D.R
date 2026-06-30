@@ -1,8 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { Loader2, Pencil } from 'lucide-react';
 import { usePersona } from './hooks';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatRut, formatDate } from '@/lib/utils';
 
 /** Exportado como `Component` para el `lazy` del router. */
@@ -13,22 +11,28 @@ export function Component() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-16">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      <div className="app-empty-state">
+        <Loader2 className="mx-auto animate-spin" size={24} />
       </div>
     );
   }
   if (isError || !p) {
     return (
-      <div className="space-y-4">
-        <p className="text-destructive">No se encontró la persona (o sin permisos para verla).</p>
-        <Button asChild variant="outline">
-          <Link to="/persona">Volver</Link>
-        </Button>
+      <div>
+        <div className="app-empty-state">
+          <p className="app-empty-state__title">No se encontró la persona</p>
+          o no tienes permisos para verla.
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <Link to="/persona" className="btn btn-secondary">
+            Volver
+          </Link>
+        </div>
       </div>
     );
   }
 
+  const inicial = (p.nombre_completo ?? '?').trim().charAt(0) || '?';
   const fields: { label: string; value: string | null }[] = [
     { label: 'RUT', value: formatRut(p.numero_id) },
     { label: 'Tipo ID', value: p.tipo_id },
@@ -47,39 +51,42 @@ export function Component() {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{p.nombre_completo}</h1>
-          <p className="text-sm text-muted-foreground">ID interno: {p.id}</p>
+    <div>
+      <div className="app-page-header">
+        <div className="app-page-header__main">
+          <div className="app-avatar app-avatar--lg">{inicial}</div>
+          <div>
+            <h1 className="app-page-title">{p.nombre_completo}</h1>
+            <p className="app-page-subtitle">
+              {formatRut(p.numero_id)} · ID interno {p.id}
+            </p>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline">
-            <Link to="/persona">Volver</Link>
-          </Button>
-          <Button asChild>
-            <Link to={`/persona/${p.id}/editar`}>
-              <Pencil /> Editar
-            </Link>
-          </Button>
+        <div className="app-page-header__actions">
+          <Link to="/persona" className="btn btn-secondary">
+            Volver
+          </Link>
+          <Link to={`/persona/${p.id}/editar`} className="btn btn-primary">
+            <Pencil size={16} /> Editar
+          </Link>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Ficha</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <dl className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="app-card">
+        <div className="app-card-header">
+          <h4>Ficha</h4>
+        </div>
+        <div className="app-card-body">
+          <dl className="app-detail-list">
             {fields.map((f) => (
-              <div key={f.label}>
-                <dt className="text-xs uppercase tracking-wide text-muted-foreground">{f.label}</dt>
-                <dd className="text-sm">{f.value || '—'}</dd>
+              <div key={f.label} className="app-detail-list__item">
+                <dt>{f.label}</dt>
+                <dd>{f.value || '—'}</dd>
               </div>
             ))}
           </dl>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

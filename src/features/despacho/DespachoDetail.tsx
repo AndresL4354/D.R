@@ -4,9 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuditoria, useDespacho, useTrabajadores, useUpdateEstadoDespacho } from './hooks';
 import { ESTADOS_DESPACHO } from './api';
-import { EstadoBadge } from './DespachoList';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EstadoPill } from './DespachoList';
 import { formatDate, formatDateTime } from '@/lib/utils';
 
 /** Exportado como `Component` para el `lazy` del router. */
@@ -25,18 +23,23 @@ export function Component() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-16">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      <div className="app-empty-state">
+        <Loader2 className="mx-auto animate-spin" size={24} />
       </div>
     );
   }
   if (isError || !d) {
     return (
-      <div className="space-y-4">
-        <p className="text-destructive">No se encontró el despacho (o sin permisos).</p>
-        <Button asChild variant="outline">
-          <Link to="/despacho">Volver</Link>
-        </Button>
+      <div>
+        <div className="app-empty-state">
+          <p className="app-empty-state__title">No se encontró el despacho</p>
+          o no tienes permisos.
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <Link to="/despacho" className="btn btn-secondary">
+            Volver
+          </Link>
+        </div>
       </div>
     );
   }
@@ -48,30 +51,33 @@ export function Component() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {d.nombre_despacho ?? `Despacho #${d.id}`}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Fecha: {formatDate(d.fecha_despacho)} · Proyecto: {d.id_proyecto ?? '—'}
-          </p>
+    <div>
+      <div className="app-page-header">
+        <div className="app-page-header__main">
+          <div>
+            <h1 className="app-page-title">{d.nombre_despacho ?? `Despacho #${d.id}`}</h1>
+            <p className="app-page-subtitle">
+              Fecha {formatDate(d.fecha_despacho)} · Proyecto {d.id_proyecto ?? '—'}
+            </p>
+          </div>
         </div>
-        <Button asChild variant="outline">
-          <Link to="/despacho">Volver</Link>
-        </Button>
+        <div className="app-page-header__actions">
+          <Link to="/despacho" className="btn btn-secondary">
+            Volver
+          </Link>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Estado</CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-center gap-3">
-          <EstadoBadge estado={d.estado} />
-          <span className="text-muted-foreground">→</span>
+      <div className="app-card">
+        <div className="app-card-header">
+          <h4>Estado</h4>
+        </div>
+        <div className="app-card-body" style={{ display: 'flex', alignItems: 'center', gap: 'var(--app-space-3)', flexWrap: 'wrap' }}>
+          <EstadoPill estado={d.estado} />
+          <span style={{ color: 'var(--app-text-muted)' }}>→</span>
           <select
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            className="app-field__control"
+            style={{ maxWidth: 200 }}
             value={estado}
             onChange={(e) => setEstado(e.target.value)}
           >
@@ -81,54 +87,78 @@ export function Component() {
               </option>
             ))}
           </select>
-          <Button onClick={onSave} disabled={estado === d.estado || updateEstado.isPending}>
+          <button
+            className="btn btn-primary"
+            onClick={onSave}
+            disabled={estado === d.estado || updateEstado.isPending}
+          >
             {updateEstado.isPending ? 'Guardando…' : 'Cambiar estado'}
-          </Button>
-        </CardContent>
-      </Card>
+          </button>
+        </div>
+      </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Trabajadores ({trabajadores?.length ?? 0})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {!trabajadores || trabajadores.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Sin trabajadores.</p>
-            ) : (
-              <ul className="space-y-1 text-sm">
-                {trabajadores.map((t) => (
-                  <li key={t.id} className="border-b py-1 last:border-0">
-                    {t.persona ?? `Persona #${t.id_persona ?? '—'}`}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+      <div className="app-card">
+        <div className="app-card-header">
+          <h4>Trabajadores ({trabajadores?.length ?? 0})</h4>
+        </div>
+        <div className="app-card-body">
+          {!trabajadores || trabajadores.length === 0 ? (
+            <p style={{ color: 'var(--app-text-muted)', margin: 0 }}>Sin trabajadores.</p>
+          ) : (
+            <div className="app-table-wrap" style={{ marginBottom: 0 }}>
+              <table className="app-table app-table--hover">
+                <thead>
+                  <tr>
+                    <th>Persona</th>
+                    <th>ID</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {trabajadores.map((t) => (
+                    <tr key={t.id}>
+                      <td>{t.persona ?? `Persona #${t.id_persona ?? '—'}`}</td>
+                      <td>{t.id_persona ?? '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Auditoría de estados</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {!auditoria || auditoria.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Sin cambios registrados.</p>
-            ) : (
-              <ul className="space-y-2 text-sm">
-                {auditoria.map((a) => (
-                  <li key={a.id} className="border-b pb-2 last:border-0">
-                    <span className="font-medium">{a.estado_anterior ?? '—'}</span> →{' '}
-                    <span className="font-medium">{a.estado_nuevo ?? '—'}</span>
-                    <div className="text-xs text-muted-foreground">
-                      {formatDateTime(a.fecha)} · {a.usuario ?? '—'}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+      <div className="app-card">
+        <div className="app-card-header">
+          <h4>Auditoría de estados</h4>
+        </div>
+        <div className="app-card-body">
+          {!auditoria || auditoria.length === 0 ? (
+            <p style={{ color: 'var(--app-text-muted)', margin: 0 }}>Sin cambios registrados.</p>
+          ) : (
+            <div className="app-table-wrap" style={{ marginBottom: 0 }}>
+              <table className="app-table">
+                <thead>
+                  <tr>
+                    <th>Anterior</th>
+                    <th>Nuevo</th>
+                    <th>Usuario</th>
+                    <th>Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {auditoria.map((a) => (
+                    <tr key={a.id}>
+                      <td>{a.estado_anterior ?? '—'}</td>
+                      <td>{a.estado_nuevo ?? '—'}</td>
+                      <td>{a.usuario ?? '—'}</td>
+                      <td>{formatDateTime(a.fecha)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,123 +1,148 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, Plus } from 'lucide-react';
+import { Eye, Loader2, Pencil, Plus } from 'lucide-react';
 import { usePersonas } from './hooks';
 import { useDebounce } from '@/hooks/useDebounce';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { formatRut } from '@/lib/utils';
 
 const PAGE_SIZE = 20;
 
-/** Exportado como `Component` para el `lazy` del data router (router.tsx). */
+/** Exportado como `Component` para el `lazy` del router. */
 export function Component() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const debounced = useDebounce(search);
   const navigate = useNavigate();
 
-  const { data, isLoading, isError } = usePersonas({
-    search: debounced,
-    page,
-    size: PAGE_SIZE,
-  });
-
+  const { data, isLoading, isError } = usePersonas({ search: debounced, page, size: PAGE_SIZE });
   const total = data?.total ?? 0;
   const rows = data?.rows ?? [];
   const lastPage = Math.max(0, Math.ceil(total / PAGE_SIZE) - 1);
+  const fromN = total === 0 ? 0 : page * PAGE_SIZE + 1;
+  const toN = Math.min(total, (page + 1) * PAGE_SIZE);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">Personas</h1>
-        <div className="flex items-center gap-2">
-          <Input
+    <div>
+      <div className="app-page-header">
+        <div className="app-page-header__main">
+          <div>
+            <h1 className="app-page-title">Personas</h1>
+            <p className="app-page-subtitle">{total} registros</p>
+          </div>
+        </div>
+        <div className="app-page-header__actions">
+          <Link to="/persona/nueva" className="btn btn-primary">
+            <Plus size={16} /> Nueva persona
+          </Link>
+        </div>
+      </div>
+
+      <div className="app-toolbar">
+        <div className="app-toolbar__filters">
+          <input
+            className="app-field__control"
+            style={{ maxWidth: 300 }}
             placeholder="Buscar por nombre…"
-            className="w-64"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(0);
             }}
           />
-          <Button asChild>
-            <Link to="/persona/nueva">
-              <Plus /> Nueva
-            </Link>
-          </Button>
         </div>
       </div>
 
-      <div className="rounded-lg border">
-        <table className="w-full text-sm">
-          <thead className="border-b bg-muted/50 text-left">
+      <div className="app-table-wrap">
+        <table className="app-table app-table--hover">
+          <thead>
             <tr>
-              <th className="px-4 py-2 font-medium">Nombre</th>
-              <th className="px-4 py-2 font-medium">RUT</th>
-              <th className="px-4 py-2 font-medium">Empresa</th>
-              <th className="px-4 py-2 font-medium">Email</th>
+              <th>Nombre</th>
+              <th>RUT</th>
+              <th>Empresa</th>
+              <th>Email</th>
+              <th style={{ width: 92 }} />
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
-                  <Loader2 className="mx-auto size-5 animate-spin" />
+                <td colSpan={5}>
+                  <div className="app-empty-state">
+                    <Loader2 className="mx-auto animate-spin" size={22} />
+                  </div>
                 </td>
               </tr>
             )}
             {isError && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-destructive">
-                  Error al cargar personas (¿credenciales Supabase configuradas?).
+                <td colSpan={5}>
+                  <div className="app-empty-state" style={{ color: 'var(--app-color-danger)' }}>
+                    Error al cargar personas (¿credenciales / permisos?).
+                  </div>
                 </td>
               </tr>
             )}
             {!isLoading && !isError && rows.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
-                  Sin resultados.
+                <td colSpan={5}>
+                  <div className="app-empty-state">
+                    <p className="app-empty-state__title">Sin resultados</p>
+                  </div>
                 </td>
               </tr>
             )}
             {rows.map((p) => (
-              <tr
-                key={p.id}
-                onClick={() => navigate(`/persona/${p.id}`)}
-                className="cursor-pointer border-b last:border-0 hover:bg-muted/30"
-              >
-                <td className="px-4 py-2">{p.nombre_completo}</td>
-                <td className="px-4 py-2">{formatRut(p.numero_id)}</td>
-                <td className="px-4 py-2">{p.empresa}</td>
-                <td className="px-4 py-2">{p.email}</td>
+              <tr key={p.id} onClick={() => navigate(`/persona/${p.id}`)} style={{ cursor: 'pointer' }}>
+                <td>{p.nombre_completo}</td>
+                <td>{formatRut(p.numero_id)}</td>
+                <td>{p.empresa}</td>
+                <td>{p.email}</td>
+                <td onClick={(e) => e.stopPropagation()}>
+                  <div className="app-row-actions">
+                    <button className="btn-icon" title="Ver" onClick={() => navigate(`/persona/${p.id}`)}>
+                      <Eye size={16} />
+                    </button>
+                    <button
+                      className="btn-icon btn-icon--primary"
+                      title="Editar"
+                      onClick={() => navigate(`/persona/${p.id}/editar`)}
+                    >
+                      <Pencil size={16} />
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>{total} registros</span>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
+      <div className="app-pagination-bar">
+        <div className="app-pagination-bar__meta">
+          Mostrando{' '}
+          <strong>
+            {fromN}–{toN}
+          </strong>{' '}
+          de <strong>{total}</strong>
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button
+            className="btn btn-secondary btn-sm"
             disabled={page <= 0}
             onClick={() => setPage((p) => Math.max(0, p - 1))}
           >
             Anterior
-          </Button>
+          </button>
           <span>
             {page + 1} / {lastPage + 1}
           </span>
-          <Button
-            variant="outline"
-            size="sm"
+          <button
+            className="btn btn-secondary btn-sm"
             disabled={page >= lastPage}
             onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
           >
             Siguiente
-          </Button>
+          </button>
         </div>
       </div>
     </div>

@@ -6,9 +6,6 @@ import { toast } from 'sonner';
 import { personaSchema, type PersonaInput } from './schema';
 import { useCreatePersona, usePersona, useUpdatePersona } from './hooks';
 import { useEmpresa } from '@/hooks/useEmpresa';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const FIELDS: { name: keyof PersonaInput; label: string; type?: string }[] = [
   { name: 'nombre_completo', label: 'Nombre completo' },
@@ -40,7 +37,7 @@ const EMPTY: PersonaInput = {
   estado_civil: '',
 };
 
-/** Exportado como `Component` para el `lazy` del router. Sirve para alta y edición. */
+/** Exportado como `Component` para el `lazy` del router. Alta y edición. */
 export function Component() {
   const { id } = useParams();
   const editId = id ? Number(id) : null;
@@ -94,42 +91,56 @@ export function Component() {
   });
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
-      <h1 className="text-3xl font-bold tracking-tight">
-        {isEdit ? 'Editar persona' : 'Nueva persona'}
-      </h1>
+    <div>
+      <div className="app-page-header">
+        <div className="app-page-header__main">
+          <h1 className="app-page-title">{isEdit ? 'Editar persona' : 'Nueva persona'}</h1>
+        </div>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Datos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={onSubmit} className="space-y-4" noValidate>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <form onSubmit={onSubmit} noValidate>
+        <div className="app-card">
+          <div className="app-card-header">
+            <h4>Datos</h4>
+          </div>
+          <div className="app-card-body">
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                gap: 'var(--app-space-4)',
+              }}
+            >
               {FIELDS.map((f) => (
-                <div key={f.name} className="space-y-1.5">
-                  <label htmlFor={f.name} className="text-sm font-medium">
+                <div key={f.name} className="app-field">
+                  <label htmlFor={f.name} className="app-field__label">
                     {f.label}
                   </label>
-                  <Input id={f.name} type={f.type ?? 'text'} {...register(f.name)} />
-                  {errors[f.name] && (
-                    <p className="text-xs text-destructive">{errors[f.name]?.message}</p>
-                  )}
+                  <input
+                    id={f.name}
+                    type={f.type ?? 'text'}
+                    className="app-field__control"
+                    {...register(f.name)}
+                  />
+                  {errors[f.name] && <p className="app-field__error">{errors[f.name]?.message}</p>}
                 </div>
               ))}
             </div>
+          </div>
+        </div>
 
-            <div className="flex justify-end gap-2 pt-2">
-              <Button asChild variant="outline" type="button">
-                <Link to={isEdit && editId ? `/persona/${editId}` : '/persona'}>Cancelar</Link>
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear persona'}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+        <div className="app-action-bar app-action-bar--bordered">
+          <Link
+            to={isEdit && editId ? `/persona/${editId}` : '/persona'}
+            className="btn btn-secondary"
+          >
+            Cancelar
+          </Link>
+          <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+            {isSubmitting ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear persona'}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
