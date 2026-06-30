@@ -38,7 +38,7 @@ export function Component() {
     { label: 'Empresa cliente', value: r.empresa_cliente },
     { label: 'Estado', value: r.estado },
     { label: 'Potencial', value: r.potencial },
-    { label: 'Lesión', value: r.lesion },
+    { label: 'Lesión', value: r.lesion == null ? null : r.lesion ? 'Sí' : 'No' },
     { label: 'Parte del cuerpo', value: r.parte_cuerpo_afectada },
     { label: 'Tipo actividad', value: r.tipo_actividad },
     { label: 'Actividad específica', value: r.actividad_especifica },
