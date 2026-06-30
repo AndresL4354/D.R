@@ -40,3 +40,29 @@ export async function listEmpresasCliente(): Promise<Tables<'empresa_cliente'>[]
   if (error) throw error;
   return data ?? [];
 }
+
+export async function listArticulos(): Promise<Tables<'articulo'>[]> {
+  const { data, error } = await supabase
+    .from('articulo')
+    .select('*')
+    .order('descripcion')
+    .limit(LIMIT);
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function listTiposEquipo(): Promise<Tables<'tipo_equipo'>[]> {
+  const { data, error } = await supabase.from('tipo_equipo').select('*').order('nombre').limit(LIMIT);
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function listAvisos(): Promise<Tables<'aviso_mantenimiento'>[]> {
+  const { data, error } = await supabase
+    .from('aviso_mantenimiento')
+    .select('*')
+    .order('fecha_inicio', { ascending: false, nullsFirst: false })
+    .limit(LIMIT);
+  if (error) throw error;
+  return data ?? [];
+}

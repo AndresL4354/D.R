@@ -67,6 +67,9 @@ export const router = createBrowserRouter(
         { path: 'documento', lazy: () => import('@/features/config/DocumentoList') },
         { path: 'empresa', lazy: () => import('@/features/config/EmpresaList') },
         { path: 'empresa-cliente', lazy: () => import('@/features/config/EmpresaClienteList') },
+        { path: 'articulo', lazy: () => import('@/features/config/ArticuloList') },
+        { path: 'tipo-equipo', lazy: () => import('@/features/config/TipoEquipoList') },
+        { path: 'aviso-mantenimiento', lazy: () => import('@/features/config/AvisoMantenimientoList') },
         // --- Resto de dominios (se irán poblando): cuadrilla, evaluacion, herramienta... ---
 
         // --- BI (Fase 6) ---
