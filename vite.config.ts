@@ -9,7 +9,8 @@ export default defineConfig({
     alias: { '@': path.resolve(__dirname, './src') },
   },
   server: {
-    port: 5173,
+    port: 5180,
+    strictPort: true, // falla si 5180 está ocupado en vez de saltar a otro puerto
     // Supabase se llama directo desde el browser (anon key + sesión). No hace falta proxy.
     proxy: {},
   },

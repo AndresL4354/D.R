@@ -38,7 +38,7 @@ export type Database = {
           comentario?: string | null
           fecha?: string | null
           fecha_modificacion?: string | null
-          id: number
+          id?: number
           id_trabajador_despacho?: number | null
           pendiente?: boolean | null
           usuario_creacion?: string | null
@@ -190,6 +190,33 @@ export type Database = {
           id?: number
           id_articulo?: number | null
           id_cargo?: number | null
+        }
+        Relationships: []
+      }
+      auditoria_estado_despacho: {
+        Row: {
+          estado_anterior: string | null
+          estado_nuevo: string | null
+          fecha: string
+          id: number
+          id_despacho: number
+          usuario: string | null
+        }
+        Insert: {
+          estado_anterior?: string | null
+          estado_nuevo?: string | null
+          fecha?: string
+          id?: number
+          id_despacho: number
+          usuario?: string | null
+        }
+        Update: {
+          estado_anterior?: string | null
+          estado_nuevo?: string | null
+          fecha?: string
+          id?: number
+          id_despacho?: number
+          usuario?: string | null
         }
         Relationships: []
       }
@@ -459,7 +486,7 @@ export type Database = {
         Insert: {
           estado?: string | null
           fecha_despacho?: string | null
-          id: number
+          id?: number
           id_proyecto: number
           nombre_despacho?: string | null
         }
@@ -2387,7 +2414,7 @@ export type Database = {
           id_persona: number
         }
         Insert: {
-          id: number
+          id?: number
           id_despacho?: number | null
           id_persona: number
         }
@@ -2510,6 +2537,7 @@ export type Database = {
       es_alta: { Args: never; Returns: boolean }
       es_gesta: { Args: never; Returns: boolean }
       has_role: { Args: { r: string }; Returns: boolean }
+      tiene_rol_despacho: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

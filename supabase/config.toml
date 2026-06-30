@@ -21,8 +21,8 @@ port = 54323
 
 [auth]
 enabled = true
-site_url = "http://localhost:5173"
-additional_redirect_urls = ["http://localhost:5173/auth/sso"]
+site_url = "http://localhost:5180"
+additional_redirect_urls = ["http://localhost:5180/auth/sso"]
 jwt_expiry = 3600
 enable_refresh_token_rotation = true
 # El alta de usuarios es server-side (provisioning vía SSO/integración), no self-signup.

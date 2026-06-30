@@ -29,7 +29,11 @@ export const router = createBrowserRouter(
         { path: 'persona/nueva', lazy: () => import('@/features/persona/PersonaForm') },
         { path: 'persona/:id', lazy: () => import('@/features/persona/PersonaDetail') },
         { path: 'persona/:id/editar', lazy: () => import('@/features/persona/PersonaForm') },
-        // --- Resto de dominios (se irán poblando): despacho, cuadrilla, entrega-epp... ---
+
+        // --- Despacho (Fase 3) ---
+        { path: 'despacho', lazy: () => import('@/features/despacho/DespachoList') },
+        { path: 'despacho/:id', lazy: () => import('@/features/despacho/DespachoDetail') },
+        // --- Resto de dominios (se irán poblando): cuadrilla, entrega-epp... ---
 
         // --- BI (Fase 6) ---
         {
