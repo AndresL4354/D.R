@@ -32,6 +32,61 @@ export async function listDespachos(params: ListDespachosParams) {
   return { rows, total: count ?? 0, proyectos };
 }
 
+// ---- Listado con motor de cumplimiento (RPC despachos_listado, Fase 3) ----
+export interface DespachoListFilters {
+  idFaena?: number | null;
+  idProyecto?: number | null;
+  estado?: string | null;
+  fechaInicio?: string | null;
+  fechaFin?: string | null;
+}
+
+export interface DespachoListRow {
+  id: number;
+  proyecto_nombre: string | null;
+  faena: string | null;
+  nombre_despacho: string | null;
+  fecha_despacho: string | null;
+  estado: string | null;
+  total_personas: number;
+  acreditados: number;
+  asistencia: number;
+  sso: number;
+  bodega: number;
+  cursos: number;
+  transporte: number;
+  despachados: number;
+  cumplimiento: number;
+}
+
+export async function listDespachosFiltrados(f: DespachoListFilters, page: number, size: number) {
+  const { data, error } = await supabase.rpc('despachos_listado' as never, {
+    p_id_faena: f.idFaena ?? null,
+    p_id_proyecto: f.idProyecto ?? null,
+    p_estado: f.estado || null,
+    p_fecha_inicio: f.fechaInicio || null,
+    p_fecha_fin: f.fechaFin ? `${f.fechaFin}T23:59:59` : null,
+    p_limit: size,
+    p_offset: page * size,
+  } as never);
+  if (error) throw error;
+  const rows = (data ?? []) as Array<DespachoListRow & { total: number }>;
+  const total = rows.length ? Number(rows[0]!.total) : 0;
+  return { rows: rows as DespachoListRow[], total };
+}
+
+export async function getDespachoFaenas(): Promise<{ id: number; nombre: string }[]> {
+  const { data, error } = await supabase.from('faena').select('id, nombre').order('nombre');
+  if (error) throw error;
+  return (data ?? []).map((f) => ({ id: f.id as number, nombre: (f.nombre as string | null) ?? '' }));
+}
+
+export async function getDespachoServicios(): Promise<{ id: number; nombre: string }[]> {
+  const { data, error } = await supabase.from('proyecto').select('id, nombre').order('nombre');
+  if (error) throw error;
+  return (data ?? []).map((p) => ({ id: p.id as number, nombre: (p.nombre as string | null) ?? '' }));
+}
+
 export async function getDespacho(id: number): Promise<Despacho | null> {
   const { data, error } = await supabase.from('despacho').select('*').eq('id', id).maybeSingle();
   if (error) throw error;

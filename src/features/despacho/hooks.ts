@@ -2,9 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   getAuditoria,
   getDespacho,
+  getDespachoFaenas,
+  getDespachoServicios,
   getTrabajadores,
   listDespachos,
+  listDespachosFiltrados,
   updateEstadoDespacho,
+  type DespachoListFilters,
   type ListDespachosParams,
 } from './api';
 
@@ -13,6 +17,26 @@ export function useDespachos(params: ListDespachosParams) {
     queryKey: ['despacho', 'list', params],
     queryFn: () => listDespachos(params),
     placeholderData: (prev) => prev,
+  });
+}
+
+/** Listado con motor de cumplimiento (RPC despachos_listado). */
+export function useDespachosFiltrados(filters: DespachoListFilters, page: number, size: number) {
+  return useQuery({
+    queryKey: ['despacho', 'listado', filters, page, size],
+    queryFn: () => listDespachosFiltrados(filters, page, size),
+    placeholderData: (prev) => prev,
+  });
+}
+
+export function useDespachoFiltrosCatalogos() {
+  return useQuery({
+    queryKey: ['despacho', 'filtros-catalogos'],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const [faenas, servicios] = await Promise.all([getDespachoFaenas(), getDespachoServicios()]);
+      return { faenas, servicios };
+    },
   });
 }
 

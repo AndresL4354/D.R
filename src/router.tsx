@@ -43,7 +43,9 @@ export const router = createBrowserRouter(
 
         // --- Despacho (Fase 3) ---
         { path: 'despacho', lazy: () => import('@/features/despacho/DespachoList') },
+        { path: 'despacho/nuevo', element: <div className="p-6">Nuevo despacho (Fase 3)</div> },
         { path: 'despacho/:id', lazy: () => import('@/features/despacho/DespachoDetail') },
+        { path: 'despacho/:id/editar', element: <div className="p-6">Editar despacho (Fase 3)</div> },
 
         // --- Entrega EPP (Fase 3) ---
         { path: 'entrega-epp', lazy: () => import('@/features/entrega-epp/EntregaEppList') },

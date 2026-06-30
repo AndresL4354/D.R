@@ -873,3 +873,113 @@
 .logo-ajustes { background-image: url('/nav/d-ajustes.png'); }
 .logo-pass { background-image: url('/nav/d-contrasena.png'); }
 .logo-sesion { background-image: url('/nav/d-sesion.png'); }
+
+/* =============================================================================
+   Dashboard-list (Despacho): KPIs/donut, conteos, progreso, filas por estado.
+   Portado verbatim de global.scss (docnomina v2).
+   ============================================================================= */
+.app-card-header__meta {
+  font-size: var(--app-fs-sm);
+  color: var(--app-text-muted);
+  font-weight: 400;
+  margin-left: auto;
+}
+
+.app-conteo {
+  font-weight: 600;
+  font-size: var(--app-fs-sm);
+  color: var(--app-text-faint);
+  font-variant-numeric: tabular-nums;
+}
+.app-conteo[data-color='success'] { color: var(--app-color-success); }
+.app-conteo[data-color='warning'] { color: var(--app-color-warning); }
+.app-conteo[data-color='danger'] { color: var(--app-color-danger); }
+.app-conteo[data-color='muted'] { color: var(--app-text-faint); }
+
+.app-donut {
+  --donut-percent: 0%;
+  --donut-color: var(--app-color-brand);
+  --donut-size: 60px;
+  --donut-thickness: 8px;
+  width: var(--donut-size);
+  height: var(--donut-size);
+  border-radius: 50%;
+  background: conic-gradient(var(--donut-color) var(--donut-percent), var(--app-color-muted-bg) 0);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+}
+.app-donut::before {
+  content: '';
+  position: absolute;
+  inset: var(--donut-thickness);
+  background: var(--app-bg-soft);
+  border-radius: 50%;
+}
+.app-donut__value {
+  position: relative;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--app-text);
+}
+.app-donut--sm { --donut-size: 40px; --donut-thickness: 6px; }
+.app-donut--sm .app-donut__value { font-size: 10px; }
+
+.app-mini-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--app-space-3);
+}
+.app-mini-kpi {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-3);
+  background: var(--app-bg-soft);
+  border-radius: var(--app-radius);
+  padding: var(--app-space-3) var(--app-space-4);
+}
+.app-mini-kpi__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.app-mini-kpi__label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--app-text-muted);
+  font-weight: 600;
+}
+.app-mini-kpi__value { font-size: var(--app-fs-md); font-weight: 700; color: var(--app-text); }
+
+.app-progress {
+  --progress: 0%;
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background: var(--app-color-muted-bg);
+  border-radius: var(--app-radius-pill);
+  overflow: hidden;
+}
+.app-progress__bar {
+  height: 100%;
+  width: var(--progress);
+  background: var(--app-color-brand);
+  border-radius: inherit;
+  transition: width var(--app-transition);
+}
+.app-progress__bar--success { background: var(--app-color-success); }
+.app-progress__bar--warning { background: var(--app-color-warning); }
+.app-progress__bar--danger { background: var(--app-color-danger); }
+.app-progress-cell { display: flex; align-items: center; gap: var(--app-space-2); min-width: 140px; }
+.app-progress-cell .app-progress { flex: 1; }
+.app-progress-cell__pct {
+  font-size: var(--app-fs-sm);
+  font-weight: 600;
+  color: var(--app-text);
+  min-width: 36px;
+  text-align: right;
+}
+
+.app-table tbody tr.app-table-row--success { background: var(--app-color-success-soft); }
+.app-table tbody tr.app-table-row--warning { background: var(--app-color-warning-soft); }
+.app-table tbody tr.app-table-row--danger { background: var(--app-color-danger-soft); }
+.app-table tbody tr.app-table-row--muted { background: var(--app-color-muted-bg); }
