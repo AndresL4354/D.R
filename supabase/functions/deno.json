@@ -1,0 +1,12 @@
+{
+  "imports": {
+    "@supabase/supabase-js": "jsr:@supabase/supabase-js@^2"
+  },
+  "fmt": {
+    "singleQuote": true,
+    "lineWidth": 100
+  },
+  "lint": {
+    "rules": { "tags": ["recommended"] }
+  }
+}

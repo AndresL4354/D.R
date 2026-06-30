@@ -1,0 +1,21 @@
+-- =============================================================================
+-- 0001_schema.sql  —  Esquema base de docnomina (95 entidades)
+-- =============================================================================
+-- ⚠️ PLACEHOLDER. Este archivo debe REEMPLAZARSE por el esquema real exportado
+-- desde la base Postgres de producción (RDS `diplanner`), depurado de artefactos
+-- JHipster. Ver §7 del plan:
+--
+--   pg_dump -h diplanner.<...>.rds.amazonaws.com -U diplanner1 -d diplanner \
+--     --schema-only --no-owner --no-privileges -f schema.sql
+--
+-- Luego depurar tabla por tabla (§7.2):
+--   jhi_user                 -> migrar a `perfil` (ver 0002_perfil.sql)
+--   jhi_authority / *_authority -> roles en `perfil.roles text[]`
+--   jhi_persistent_token     -> descartar (Supabase Auth gestiona sesiones)
+--   databasechangelog*       -> descartar (usamos supabase/migrations)
+--   hibernate_sequence       -> IDENTITY o conservar SEQUENCE + setval
+--
+-- El naming ya es snake_case → compatible directo con PostgREST.
+-- =============================================================================
+
+-- (Pega aquí el esquema depurado de las 95 tablas.)

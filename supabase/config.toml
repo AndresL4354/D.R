@@ -1,0 +1,51 @@
+# Config Supabase para docnomina (Fase 0 — base).
+# Si tu versión de CLI difiere de los campos de aquí, corre `supabase init`
+# para regenerar este archivo y conserva migrations/ y functions/.
+project_id = "docnomina"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["http://localhost:5173/auth/sso"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+# El alta de usuarios es server-side (provisioning vía SSO/integración), no self-signup.
+enable_signup = false
+
+[auth.email]
+enable_signup = false
+enable_confirmations = false
+
+# Custom claims (empresa, roles) — ya habilitado en el proyecto remoto.
+[auth.hook.custom_access_token]
+enabled = true
+uri = "pg-functions://postgres/public/custom_access_token_hook"
+
+[functions]
+# Las Edge Functions (Deno) viven en supabase/functions/<nombre>/index.ts
+
+# sso-consume es PÚBLICO: la prueba de identidad es el launch token que valida
+# el hub Gesta OS, no un JWT de Supabase (el usuario aún no tiene sesión).
+[functions.sso-consume]
+verify_jwt = false
+
+# sso-users es server-to-server: se autentica por X-Internal-Api-Key dentro de
+# la función, no por JWT de Supabase.
+[functions.sso-users]
+verify_jwt = false
