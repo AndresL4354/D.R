@@ -2,6 +2,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createPersona,
   getPersona,
+  getPersonaCargos,
+  getPersonaEmpresas,
+  getTiposDocPersona,
   listPersonas,
   updatePersona,
   type ListPersonasParams,
@@ -21,6 +24,22 @@ export function usePersona(id: number) {
     queryKey: ['persona', 'detail', id],
     queryFn: () => getPersona(id),
     enabled: Number.isFinite(id) && id > 0,
+  });
+}
+
+/** Datos complementarios de la ficha: cargos, empresas asociadas y tipos de documento. */
+export function usePersonaExtras(id: number) {
+  return useQuery({
+    queryKey: ['persona', 'extras', id],
+    enabled: Number.isFinite(id) && id > 0,
+    queryFn: async () => {
+      const [cargos, empresas, tiposDoc] = await Promise.all([
+        getPersonaCargos(id),
+        getPersonaEmpresas(id),
+        getTiposDocPersona(id),
+      ]);
+      return { cargos, empresas, tiposDoc };
+    },
   });
 }
 
