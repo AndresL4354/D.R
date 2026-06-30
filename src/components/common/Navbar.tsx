@@ -12,6 +12,7 @@ const links = [
   { to: '/epp', label: 'EPP' },
   { to: '/logistica', label: 'Logística' },
   { to: '/evaluacion', label: 'Evaluaciones' },
+  { to: '/reporte-flash', label: 'Seguridad' },
   { to: '/config', label: 'Configuración' },
 ];
 

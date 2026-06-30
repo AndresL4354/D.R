@@ -51,6 +51,10 @@ export const router = createBrowserRouter(
         { path: 'evaluacion', lazy: () => import('@/features/evaluacion/EvaluacionList') },
         { path: 'evaluacion/:id', lazy: () => import('@/features/evaluacion/EvaluacionDetail') },
 
+        // --- Seguridad / Reportes Flash (Fase 4) ---
+        { path: 'reporte-flash', lazy: () => import('@/features/reporte-flash/ReporteFlashList') },
+        { path: 'reporte-flash/:id', lazy: () => import('@/features/reporte-flash/ReporteFlashDetail') },
+
         // --- Logística (Fase 4) ---
         { path: 'logistica', lazy: () => import('@/features/logistica/LogisticaIndex') },
         { path: 'pasaje', lazy: () => import('@/features/logistica/PasajeList') },
