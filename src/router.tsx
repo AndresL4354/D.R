@@ -62,6 +62,12 @@ export const router = createBrowserRouter(
         { path: 'evaluacion', lazy: () => import('@/features/evaluacion/EvaluacionList') },
         { path: 'evaluacion/:id', lazy: () => import('@/features/evaluacion/EvaluacionDetail') },
 
+        // --- Equipos (en el real: Reportabilidad → "Evaluaciones" REP_PERSONAS) ---
+        { path: 'equipo', lazy: () => import('@/features/equipo/EquipoList') },
+        { path: 'equipo/nuevo', element: <div className="p-6">Nuevo equipo (Fase 4)</div> },
+        { path: 'equipo/:id', element: <div className="p-6">Detalle de equipo (Fase 4)</div> },
+        { path: 'equipo/:id/editar', element: <div className="p-6">Editar equipo (Fase 4)</div> },
+
         // --- Seguridad / Reportes Flash (Fase 4) ---
         { path: 'reporte-flash', lazy: () => import('@/features/reporte-flash/ReporteFlashList') },
         { path: 'reporte-flash/:id', lazy: () => import('@/features/reporte-flash/ReporteFlashDetail') },

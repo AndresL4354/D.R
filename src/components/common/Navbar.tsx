@@ -133,7 +133,7 @@ export function Navbar() {
   const starts = (...ps: string[]) => ps.some((p) => pathname === p || pathname.startsWith(p));
   const serviciosActive = starts('/proyecto', '/despacho', '/entrega-epp');
   const personasActive = starts('/persona');
-  const reportaActive = starts('/dashboard', '/evaluacion', '/reporte-flash');
+  const reportaActive = starts('/dashboard', '/evaluacion', '/equipo', '/reporte-flash');
   const configActive = starts(
     '/empresa',
     '/empresa-cliente',
@@ -202,8 +202,9 @@ export function Navbar() {
               show={hasRole('REP_PERSONAS')}
               onNavigate={closeMenu}
             />
+            {/* En el real este item se llama "Evaluaciones" pero abre /equipo (Equipos) */}
             <DropItem
-              to="/evaluacion"
+              to="/equipo"
               icon="logo-reporte-evaluaciones"
               label="Evaluaciones"
               show={hasRole('REP_PERSONAS')}
