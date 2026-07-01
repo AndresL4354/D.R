@@ -54,6 +54,63 @@ export async function listEntregas(params: ListEntregasParams) {
   return { rows, total: count ?? 0, personas, proyectos, faenas };
 }
 
+// ---- Listado con filtros (RPC entregas_listado — clon de consultarEntregasFiltro) ----
+export interface EntregaListFilters {
+  id?: string;
+  fechaInicio?: string | null;
+  fechaFin?: string | null;
+  rut?: string;
+  nombre?: string;
+  usuarioEntrega?: string | null;
+  idFaena?: number | null;
+  idProyecto?: number | null;
+}
+
+export interface EntregaListRow {
+  id: number;
+  fecha_creacion: string | null;
+  usuario_entrega: string | null;
+  trabajador: string | null;
+  faena: string | null;
+  servicio: string | null;
+}
+
+/** Bodegas del filtro "Entregado en" (hardcode del componente real). */
+export const BODEGAS_ENTREGA = ['bodega.gesta', 'bodega.gesta.mel.spot', 'bodega.gesta.mel.permanente'];
+
+export async function listEntregasFiltradas(f: EntregaListFilters, page: number, size: number) {
+  const { data, error } = await supabase.rpc('entregas_listado' as never, {
+    p_id: f.id && Number(f.id) > 0 ? Number(f.id) : null,
+    p_fecha_inicio: f.fechaInicio || null,
+    p_fecha_fin: f.fechaFin ? `${f.fechaFin}T23:59:59` : null,
+    p_rut: f.rut?.trim() || null,
+    p_nombre: f.nombre?.trim() || null,
+    p_usuario_entrega: f.usuarioEntrega || null,
+    p_id_faena: f.idFaena ?? null,
+    p_id_proyecto: f.idProyecto ?? null,
+    p_limit: size,
+    p_offset: page * size,
+  } as never);
+  if (error) throw error;
+  const rows = (data ?? []) as Array<EntregaListRow & { total: number }>;
+  const total = rows.length ? Number(rows[0]!.total) : 0;
+  return { rows: rows as EntregaListRow[], total };
+}
+
+/** Catálogos de filtros: faenas y servicios (como getAllFaenas/getAllProyectos). */
+export async function getEntregaFiltrosCatalogos() {
+  const [{ data: fs, error: e1 }, { data: ps, error: e2 }] = await Promise.all([
+    supabase.from('faena').select('id, nombre').order('nombre'),
+    supabase.from('proyecto').select('id, nombre').order('nombre'),
+  ]);
+  if (e1) throw e1;
+  if (e2) throw e2;
+  return {
+    faenas: (fs ?? []).map((f) => ({ id: f.id as number, nombre: (f.nombre as string | null) ?? '' })),
+    servicios: (ps ?? []).map((p) => ({ id: p.id as number, nombre: (p.nombre as string | null) ?? '' })),
+  };
+}
+
 export async function getEntrega(id: number): Promise<EntregaEpp | null> {
   const { data, error } = await supabase.from('entrega_epp').select('*').eq('id', id).maybeSingle();
   if (error) throw error;

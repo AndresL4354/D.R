@@ -40,3 +40,14 @@ export function formatDateTime(value: string | Date | null | undefined): string 
     return '';
   }
 }
+
+/** Clon del pipe formatMediumDatetime de docnomina: dayjs 'D MMM YYYY HH:mm:ss'. */
+export function formatMediumDatetime(value: string | Date | null | undefined): string {
+  if (!value) return '';
+  try {
+    const date = typeof value === 'string' ? parseISO(value) : value;
+    return format(date, 'd MMM yyyy HH:mm:ss', { locale: es });
+  } catch {
+    return '';
+  }
+}

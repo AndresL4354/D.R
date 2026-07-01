@@ -2,8 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 import {
   getDetalleEntrega,
   getEntrega,
+  getEntregaFiltrosCatalogos,
   listEntregas,
+  listEntregasFiltradas,
   resolveEntrega,
+  type EntregaListFilters,
   type ListEntregasParams,
 } from './api';
 
@@ -12,6 +15,23 @@ export function useEntregas(params: ListEntregasParams) {
     queryKey: ['entrega', 'list', params],
     queryFn: () => listEntregas(params),
     placeholderData: (prev) => prev,
+  });
+}
+
+/** Listado con filtros (RPC entregas_listado). */
+export function useEntregasFiltradas(filters: EntregaListFilters, page: number, size: number) {
+  return useQuery({
+    queryKey: ['entrega', 'listado', filters, page, size],
+    queryFn: () => listEntregasFiltradas(filters, page, size),
+    placeholderData: (prev) => prev,
+  });
+}
+
+export function useEntregaFiltrosCatalogos() {
+  return useQuery({
+    queryKey: ['entrega', 'filtros-catalogos'],
+    queryFn: getEntregaFiltrosCatalogos,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

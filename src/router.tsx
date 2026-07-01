@@ -47,9 +47,11 @@ export const router = createBrowserRouter(
         { path: 'despacho/:id', lazy: () => import('@/features/despacho/DespachoDetail') },
         { path: 'despacho/:id/editar', element: <div className="p-6">Editar despacho (Fase 3)</div> },
 
-        // --- Entrega EPP (Fase 3) ---
+        // --- Entrega EPP (Fase 3) — vista gateada como en el real ---
         { path: 'entrega-epp', lazy: () => import('@/features/entrega-epp/EntregaEppList') },
+        { path: 'entrega-epp/nueva', element: <div className="p-6">Nueva entrega (Fase 3)</div> },
         { path: 'entrega-epp/:id', lazy: () => import('@/features/entrega-epp/EntregaEppDetail') },
+        { path: 'entrega-epp/:id/editar', element: <div className="p-6">Editar entrega (Fase 3)</div> },
 
         // --- Mochila SPDC (Fase 3, dominio ALTA) ---
         { path: 'mochila-spdc', lazy: () => import('@/features/mochila/MochilaList') },
