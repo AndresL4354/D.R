@@ -10,7 +10,7 @@ import { useRole } from '@/features/auth/useRole';
 export interface CatalogoField {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'textarea' | 'checkbox' | 'select' | 'date';
+  type: 'text' | 'number' | 'textarea' | 'checkbox' | 'select' | 'date' | 'datetime';
   options?: string[];
   required?: boolean;
   maxLength?: number;
@@ -66,6 +66,7 @@ export function CatalogoForm({
         const v = existing[f.key];
         if (f.type === 'checkbox') o[f.key] = Boolean(v);
         else if (f.type === 'date') o[f.key] = v ? String(v).slice(0, 10) : '';
+        else if (f.type === 'datetime') o[f.key] = v ? String(v).slice(0, 16) : '';
         else o[f.key] = v == null ? '' : String(v);
       }
       setValues(o);
@@ -184,7 +185,15 @@ export function CatalogoForm({
                       </select>
                     ) : (
                       <input
-                        type={f.type === 'number' ? 'number' : f.type === 'date' ? 'date' : 'text'}
+                        type={
+                          f.type === 'number'
+                            ? 'number'
+                            : f.type === 'date'
+                              ? 'date'
+                              : f.type === 'datetime'
+                                ? 'datetime-local'
+                                : 'text'
+                        }
                         className="app-field__control"
                         maxLength={f.type === 'text' ? (f.maxLength ?? 150) : undefined}
                         value={String(values[f.key] ?? '')}

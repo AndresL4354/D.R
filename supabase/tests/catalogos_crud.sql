@@ -10,7 +10,7 @@ create temp table tap (seq serial, t text);
 grant select, insert on tap to authenticated;
 grant usage, select on sequence tap_seq_seq to authenticated;
 
-insert into tap(t) select plan(8);
+insert into tap(t) select plan(10);
 
 set local role authenticated;
 
@@ -62,6 +62,16 @@ set local request.jwt.claims = '{"app_roles":["ROLE_ADMIN"]}';
 insert into tap(t) select lives_ok(
   $$insert into public.articulo(descripcion, clasificacion) values('PGTAP-ART-EPP', 'EPP')$$,
   'ROLE_ADMIN crea artículo no-SPDC');
+
+-- 9-10) Lote 2 (0029): documento — no-admin bloqueado, admin permitido
+set local request.jwt.claims = '{"app_roles":["OPERACIONES"]}';
+insert into tap(t) select throws_ok(
+  $$insert into public.documento(nombre) values('PGTAP-DOC')$$,
+  '42501', NULL, 'OPERACIONES no puede insertar documento (lote 2)');
+set local request.jwt.claims = '{"app_roles":["ROLE_ADMIN"]}';
+insert into tap(t) select lives_ok(
+  $$insert into public.documento(nombre) values('PGTAP-DOC')$$,
+  'ROLE_ADMIN crea documento (lote 2)');
 
 insert into tap(t) select * from finish();
 reset role;

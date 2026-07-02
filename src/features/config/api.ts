@@ -159,7 +159,15 @@ export async function listAvisos(): Promise<Tables<'aviso_mantenimiento'>[]> {
 // Primer lote: faena, cargo, articulo, tipo_equipo.
 // =============================================================================
 
-export type CatalogoTabla = 'faena' | 'cargo' | 'articulo' | 'tipo_equipo';
+export type CatalogoTabla =
+  | 'faena'
+  | 'cargo'
+  | 'articulo'
+  | 'tipo_equipo'
+  | 'documento'
+  | 'empresa'
+  | 'empresa_cliente'
+  | 'aviso_mantenimiento';
 export type CatalogoRow = Record<string, string | number | boolean | null>;
 
 export async function getCatalogo(tabla: CatalogoTabla, id: number): Promise<CatalogoRow | null> {

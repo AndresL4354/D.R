@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eraser, Eye, Filter, Pencil, Trash2 } from 'lucide-react';
+import { Eraser, Filter, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CatalogoPage } from './CatalogoPage';
-import { useDocumentosCatalogo, useEmpresasCliente } from './hooks';
+import { useDeleteCatalogo, useDocumentosCatalogo, useEmpresasCliente } from './hooks';
 import { CATEGORIAS_DOCUMENTO, type DocumentoFiltros } from './api';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { RowActionsMenu } from '@/components/common/RowActionsMenu';
 import { useRole } from '@/features/auth/useRole';
 
@@ -25,6 +26,18 @@ export function Component() {
   const { data: documentos, isLoading, isError } = useDocumentosCatalogo(canPrivado, applied);
   const { data: empresasCliente } = useEmpresasCliente();
   const rows = documentos ?? [];
+  const del = useDeleteCatalogo('documento');
+  const [aEliminar, setAEliminar] = useState<{ id: number; nombre: string | null } | null>(null);
+  const doEliminar = async () => {
+    if (!aEliminar) return;
+    try {
+      await del.mutateAsync(aEliminar.id);
+      toast.success('Documento eliminado.');
+      setAEliminar(null);
+    } catch (e) {
+      toast.error(`No se pudo eliminar: ${(e as Error).message}`);
+    }
+  };
 
   const filtrar = () =>
     setApplied({ nombre: draft.nombre, empresa: draft.empresa || null, categoria: draft.categoria || null });
@@ -118,13 +131,12 @@ export function Component() {
               <td>
                 <RowActionsMenu
                   actions={[
-                    { label: 'Ver', icon: <Eye size={16} />, onClick: () => navigate(`/documento/${d.id}/ver`) },
                     { label: 'Editar', icon: <Pencil size={16} />, onClick: () => navigate(`/documento/${d.id}/editar`) },
                     {
                       label: 'Eliminar',
                       icon: <Trash2 size={16} />,
                       show: canDelete,
-                      onClick: () => toast.info('Eliminar documento: disponible al portar la mutación (Fase 4).'),
+                      onClick: () => setAEliminar({ id: d.id, nombre: d.nombre }),
                     },
                   ]}
                 />
@@ -133,6 +145,18 @@ export function Component() {
           ))}
         </tbody>
       </table>
+      <ConfirmDialog
+        open={aEliminar != null}
+        title="Eliminar documento"
+        confirmLabel="Eliminar"
+        busy={del.isPending}
+        onCancel={() => setAEliminar(null)}
+        onConfirm={doEliminar}
+      >
+        <p>
+          ¿Confirmas que deseas eliminar el documento <strong>{aEliminar?.nombre}</strong>?
+        </p>
+      </ConfirmDialog>
     </CatalogoPage>
   );
 }

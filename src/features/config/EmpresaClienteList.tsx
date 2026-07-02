@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CatalogoPage } from './CatalogoPage';
-import { useEmpresasCliente } from './hooks';
+import { useDeleteCatalogo, useEmpresasCliente } from './hooks';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { RowActionsMenu } from '@/components/common/RowActionsMenu';
 
 /**
@@ -13,6 +15,18 @@ export function Component() {
   const navigate = useNavigate();
   const { data: empresas, isLoading, isError } = useEmpresasCliente();
   const rows = empresas ?? [];
+  const del = useDeleteCatalogo('empresa_cliente');
+  const [aEliminar, setAEliminar] = useState<{ id: number; razon_social: string | null } | null>(null);
+  const doEliminar = async () => {
+    if (!aEliminar) return;
+    try {
+      await del.mutateAsync(aEliminar.id);
+      toast.success('Empresa cliente eliminada.');
+      setAEliminar(null);
+    } catch (e) {
+      toast.error(`No se pudo eliminar: ${(e as Error).message}`);
+    }
+  };
 
   return (
     <CatalogoPage
@@ -47,12 +61,11 @@ export function Component() {
               <td>
                 <RowActionsMenu
                   actions={[
-                    { label: 'Ver', icon: <Eye size={16} />, onClick: () => navigate(`/empresa-cliente/${e.id}/ver`) },
                     { label: 'Editar', icon: <Pencil size={16} />, onClick: () => navigate(`/empresa-cliente/${e.id}/editar`) },
                     {
                       label: 'Eliminar',
                       icon: <Trash2 size={16} />,
-                      onClick: () => toast.info('Eliminar empresa cliente: disponible al portar la mutación (Fase 4).'),
+                      onClick: () => setAEliminar({ id: e.id, razon_social: e.razon_social }),
                     },
                   ]}
                 />
@@ -61,6 +74,18 @@ export function Component() {
           ))}
         </tbody>
       </table>
+      <ConfirmDialog
+        open={aEliminar != null}
+        title="Eliminar empresa cliente"
+        confirmLabel="Eliminar"
+        busy={del.isPending}
+        onCancel={() => setAEliminar(null)}
+        onConfirm={doEliminar}
+      >
+        <p>
+          ¿Confirmas que deseas eliminar la empresa cliente <strong>{aEliminar?.razon_social}</strong>?
+        </p>
+      </ConfirmDialog>
     </CatalogoPage>
   );
 }
