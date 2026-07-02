@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Users } from 'lucide-react';
 import { usePersonalProyecto, useProyecto } from './hooks';
 import { ProyectoEstadoPill } from './ProyectoList';
 import { formatDate } from '@/lib/utils';
@@ -85,6 +85,11 @@ export function Component() {
       <div className="app-card">
         <div className="app-card-header">
           <h4>Personal asignado ({personal?.length ?? 0})</h4>
+          {p.estado !== 'FINALIZADO' && (
+            <Link to={`/proyecto/${p.id}/asociar`} className="btn btn-primary btn-sm" style={{ marginLeft: 'auto' }}>
+              <Users size={16} /> Asociar personas
+            </Link>
+          )}
         </div>
         <div className="app-card-body">
           {!personal || personal.length === 0 ? (

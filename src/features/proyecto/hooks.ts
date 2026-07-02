@@ -1,9 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  acreditarTrabajador,
   activarProyecto,
+  asociarPersona,
+  backupAsociado,
+  buscarPersonas,
+  cambiarCargoAsociado,
   createProyecto,
+  eliminarAsociado,
   eliminarProyecto,
   finalizarProyecto,
+  gestionTempranaToggle,
   getCargosByFaena,
   getCargosProyecto,
   getFaenasParaForm,
@@ -12,6 +19,8 @@ import {
   getProyectoFaenas,
   guardarCargosProyecto,
   listProyectos,
+  oficializarNomina,
+  reasociarPersona,
   updateProyecto,
   type CargoSolicitado,
   type ListProyectosParams,
@@ -116,5 +125,87 @@ export function useCargosByFaena(idFaena: number | null | undefined) {
     queryFn: () => getCargosByFaena(idFaena as number),
     enabled: idFaena != null && idFaena > 0,
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+// ---- Mutaciones de asociación Persona↔Proyecto (0026) ----
+export function useBuscarPersonas(term: string) {
+  return useQuery({
+    queryKey: ['proyecto', 'buscar-personas', term],
+    queryFn: () => buscarPersonas(term),
+    enabled: term.trim().length >= 2,
+    staleTime: 30 * 1000,
+  });
+}
+
+export function useAsociarPersona() {
+  const inv = useProyectoInvalidate();
+  return useMutation({
+    mutationFn: (a: { idPersona: number; idProyecto: number; idCargo: number; cargo: string; usuario: string }) =>
+      asociarPersona(a.idPersona, a.idProyecto, a.idCargo, a.cargo, a.usuario),
+    onSuccess: inv,
+  });
+}
+
+export function useOficializarNomina() {
+  const inv = useProyectoInvalidate();
+  return useMutation({
+    mutationFn: ({ idProyecto, idsPersona }: { idProyecto: number; idsPersona: number[] }) =>
+      oficializarNomina(idProyecto, idsPersona),
+    onSuccess: inv,
+  });
+}
+
+export function useBackupAsociado() {
+  const inv = useProyectoInvalidate();
+  return useMutation({
+    mutationFn: (a: { idPersona: number; idProyecto: number; motivo: string }) =>
+      backupAsociado(a.idPersona, a.idProyecto, a.motivo),
+    onSuccess: inv,
+  });
+}
+
+export function useEliminarAsociado() {
+  const inv = useProyectoInvalidate();
+  return useMutation({
+    mutationFn: (a: { idPersona: number; idProyecto: number; motivo: string }) =>
+      eliminarAsociado(a.idPersona, a.idProyecto, a.motivo),
+    onSuccess: inv,
+  });
+}
+
+export function useReasociarPersona() {
+  const inv = useProyectoInvalidate();
+  return useMutation({
+    mutationFn: (a: { idPersona: number; idProyecto: number; motivo: string }) =>
+      reasociarPersona(a.idPersona, a.idProyecto, a.motivo),
+    onSuccess: inv,
+  });
+}
+
+export function useCambiarCargoAsociado() {
+  const inv = useProyectoInvalidate();
+  return useMutation({
+    mutationFn: (a: { idPersona: number; idProyecto: number; idCargo: number; cargo: string }) =>
+      cambiarCargoAsociado(a.idPersona, a.idProyecto, a.idCargo, a.cargo),
+    onSuccess: inv,
+  });
+}
+
+export function useAcreditarTrabajador() {
+  const inv = useProyectoInvalidate();
+  return useMutation({
+    mutationFn: ({ idProyecto, idPersona }: { idProyecto: number; idPersona: number }) =>
+      acreditarTrabajador(idProyecto, idPersona),
+    onSuccess: inv,
+  });
+}
+
+export function useGestionTempranaToggle() {
+  const inv = useProyectoInvalidate();
+  return useMutation({
+    mutationFn: ({ idProyecto, idPersona, usuario }: { idProyecto: number; idPersona: number; usuario: string }) =>
+      gestionTempranaToggle(idProyecto, idPersona, usuario),
+    onSuccess: inv,
   });
 }

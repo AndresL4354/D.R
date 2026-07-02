@@ -41,6 +41,7 @@ export const router = createBrowserRouter(
         { path: 'proyecto/:id', lazy: () => import('@/features/proyecto/ProyectoDetail') },
         { path: 'proyecto/:id/editar', lazy: () => import('@/features/proyecto/ProyectoForm') },
         { path: 'proyecto/:id/cargos', lazy: () => import('@/features/proyecto/CargosProyecto') },
+        { path: 'proyecto/:id/asociar', lazy: () => import('@/features/proyecto/AsociarPersonas') },
 
         // --- Despacho (Fase 3) ---
         { path: 'despacho', lazy: () => import('@/features/despacho/DespachoList') },

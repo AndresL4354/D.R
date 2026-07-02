@@ -55,10 +55,15 @@ export async function getProyecto(id: number): Promise<Proyecto | null> {
 
 export interface PersonalRow {
   id: number;
+  idPersona: number;
+  numId: string | null;
   persona: string | null;
   cargo: string | null;
+  idCargo: number | null;
   estado: string | null;
+  motivo: string | null;
   acreditado: boolean | null;
+  gestionTemprana: boolean | null;
   nuevo: boolean | null;
 }
 
@@ -210,27 +215,156 @@ export async function getCargosByFaena(idFaena: number): Promise<{ id: number; n
   return (cargos ?? []).map((c) => ({ id: c.id as number, nombre: (c.nombre as string | null) ?? '' }));
 }
 
-/** Personal asignado al proyecto (persona_proyecto + nombre de persona). */
+/** Personal asignado al proyecto (persona_proyecto + nombre de persona). Todos los estados. */
 export async function getPersonalProyecto(idProyecto: number): Promise<PersonalRow[]> {
   const { data, error } = await supabase
     .from('persona_proyecto')
-    .select('id, id_persona, cargo, estado, acreditado, nuevo')
+    .select('id, id_persona, cargo, id_cargo, estado, motivo, acreditado, gestion_temprana, nuevo')
     .eq('id_proyecto', idProyecto)
     .order('id', { ascending: false });
   if (error) throw error;
   const rows = data ?? [];
   const pids = [...new Set(rows.map((r) => r.id_persona).filter((x): x is number => x != null))];
-  const personas = new Map<number, string>();
+  const personas = new Map<number, { nombre: string; numId: string | null }>();
   if (pids.length) {
-    const { data: ps } = await supabase.from('persona').select('id, nombre_completo').in('id', pids);
-    (ps ?? []).forEach((p) => personas.set(p.id, p.nombre_completo ?? ''));
+    const { data: ps } = await supabase.from('persona').select('id, nombre_completo, numero_id').in('id', pids);
+    (ps ?? []).forEach((p) => personas.set(p.id, { nombre: p.nombre_completo ?? '', numId: p.numero_id ?? null }));
   }
-  return rows.map((r) => ({
-    id: r.id,
-    persona: r.id_persona != null ? (personas.get(r.id_persona) ?? null) : null,
-    cargo: r.cargo,
-    estado: r.estado,
-    acreditado: r.acreditado,
-    nuevo: r.nuevo,
+  return rows
+    .filter((r) => r.id_persona != null)
+    .map((r) => {
+      const info = r.id_persona != null ? personas.get(r.id_persona) : undefined;
+      return {
+        id: r.id,
+        idPersona: r.id_persona as number,
+        numId: info?.numId ?? null,
+        persona: info?.nombre ?? null,
+        cargo: r.cargo,
+        idCargo: r.id_cargo,
+        estado: r.estado,
+        motivo: r.motivo,
+        acreditado: r.acreditado,
+        gestionTemprana: r.gestion_temprana,
+        nuevo: r.nuevo,
+      };
+    });
+}
+
+// ---- Mutaciones de asociación (0026) ----
+
+/** Búsqueda de personas Activas para el autocomplete de "Asignar persona". */
+export interface PersonaBusqueda {
+  id: number;
+  nombre: string | null;
+  numId: string | null;
+  estado: string | null;
+}
+export async function buscarPersonas(term: string): Promise<PersonaBusqueda[]> {
+  const t = term.trim();
+  if (!t) return [];
+  const { data, error } = await supabase
+    .from('persona')
+    .select('id, nombre_completo, numero_id, estado_persona')
+    .or(`nombre_completo.ilike.%${t}%,numero_id.ilike.%${t}%`)
+    .limit(20);
+  if (error) throw error;
+  return (data ?? []).map((p) => ({
+    id: p.id as number,
+    nombre: (p.nombre_completo as string | null) ?? null,
+    numId: (p.numero_id as string | null) ?? null,
+    estado: (p.estado_persona as string | null) ?? null,
   }));
+}
+
+export async function asociarPersona(
+  idPersona: number,
+  idProyecto: number,
+  idCargo: number,
+  cargo: string,
+  usuario: string,
+) {
+  const { error } = await supabase.rpc('asociar_persona_proyecto' as never, {
+    p_id_persona: idPersona,
+    p_id_proyecto: idProyecto,
+    p_id_cargo: idCargo,
+    p_cargo: cargo,
+    p_usuario: usuario,
+  } as never);
+  if (error) throw error;
+}
+
+/** Devuelve los nombres bloqueados (oficializados en otro proyecto); '' si todos ok. */
+export async function oficializarNomina(idProyecto: number, idsPersona: number[]): Promise<string> {
+  const { data, error } = await supabase.rpc('oficializar_nomina' as never, {
+    p_id_proyecto: idProyecto,
+    p_ids_persona: idsPersona,
+  } as never);
+  if (error) throw error;
+  return (data as string | null) ?? '';
+}
+
+export async function backupAsociado(idPersona: number, idProyecto: number, motivo: string) {
+  const { error } = await supabase.rpc('backup_asociado' as never, {
+    p_id_persona: idPersona,
+    p_id_proyecto: idProyecto,
+    p_motivo: motivo,
+  } as never);
+  if (error) throw error;
+}
+
+export async function eliminarAsociado(idPersona: number, idProyecto: number, motivo: string) {
+  const { error } = await supabase.rpc('eliminar_asociado' as never, {
+    p_id_persona: idPersona,
+    p_id_proyecto: idProyecto,
+    p_motivo: motivo,
+  } as never);
+  if (error) throw error;
+}
+
+export async function reasociarPersona(idPersona: number, idProyecto: number, motivo: string) {
+  const { error } = await supabase.rpc('reasociar_persona' as never, {
+    p_id_persona: idPersona,
+    p_id_proyecto: idProyecto,
+    p_motivo: motivo,
+  } as never);
+  if (error) throw error;
+}
+
+export async function cambiarCargoAsociado(idPersona: number, idProyecto: number, idCargo: number, cargo: string) {
+  const { error } = await supabase.rpc('cambiar_cargo_asociado' as never, {
+    p_id_persona: idPersona,
+    p_id_proyecto: idProyecto,
+    p_id_cargo: idCargo,
+    p_cargo: cargo,
+  } as never);
+  if (error) throw error;
+}
+
+export async function acreditarTrabajador(idProyecto: number, idPersona: number) {
+  const { error } = await supabase.rpc('acreditar_trabajador' as never, {
+    p_id_proyecto: idProyecto,
+    p_id_persona: idPersona,
+  } as never);
+  if (error) throw error;
+}
+
+/** Toggle de asistencia a gestión temprana; devuelve el nuevo valor del flag. */
+export async function gestionTempranaToggle(idProyecto: number, idPersona: number, usuario: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('gestion_temprana_toggle' as never, {
+    p_id_proyecto: idProyecto,
+    p_id_persona: idPersona,
+    p_usuario: usuario,
+  } as never);
+  if (error) throw error;
+  return Boolean(data);
+}
+
+/** ¿La persona está en un despacho de este servicio? (gate de eliminar / texto de backup). */
+export async function personaEnDespacho(idPersona: number, idProyecto: number): Promise<boolean> {
+  const { data, error } = await supabase.rpc('persona_en_despacho' as never, {
+    p_id_persona: idPersona,
+    p_id_proyecto: idProyecto,
+  } as never);
+  if (error) throw error;
+  return Boolean(data);
 }

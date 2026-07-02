@@ -17,6 +17,7 @@ export function ConfirmDialog({
   confirmIcon = <Trash2 size={16} />,
   danger = true,
   busy = false,
+  confirmDisabled = false,
   onCancel,
   onConfirm,
 }: {
@@ -29,6 +30,8 @@ export function ConfirmDialog({
   confirmIcon?: ReactNode;
   danger?: boolean;
   busy?: boolean;
+  /** Deshabilita el botón de confirmar (p.ej. motivo obligatorio vacío). */
+  confirmDisabled?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
@@ -61,7 +64,7 @@ export function ConfirmDialog({
             type="button"
             className={`btn ${danger ? 'btn-danger' : 'btn-primary'}`}
             onClick={onConfirm}
-            disabled={busy}
+            disabled={busy || confirmDisabled}
           >
             {confirmIcon} {busy ? 'Procesando…' : confirmLabel}
           </button>
