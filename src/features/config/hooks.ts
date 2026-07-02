@@ -21,3 +21,31 @@ export const useArticulos = () => useQuery({ queryKey: ['cfg', 'articulo'], quer
 export const useTiposEquipo = () =>
   useQuery({ queryKey: ['cfg', 'tipo_equipo'], queryFn: listTiposEquipo });
 export const useAvisos = () => useQuery({ queryKey: ['cfg', 'aviso'], queryFn: listAvisos });
+
+// ---- Listados clon ----
+import {
+  listArticulosFiltro,
+  listCargosListado,
+  listDocumentosCatalogo,
+  listFaenasListado,
+  type ArticuloFiltros,
+  type DocumentoFiltros,
+} from './api';
+
+export const useFaenasListado = (nombre: string | null) =>
+  useQuery({ queryKey: ['cfg', 'faena-listado', nombre], queryFn: () => listFaenasListado(nombre) });
+
+export const useCargosListado = (nombre: string | null) =>
+  useQuery({ queryKey: ['cfg', 'cargo-listado', nombre], queryFn: () => listCargosListado(nombre) });
+
+export const useDocumentosCatalogo = (canPrivado: boolean, filtros: DocumentoFiltros) =>
+  useQuery({
+    queryKey: ['cfg', 'documento-catalogo', canPrivado, filtros],
+    queryFn: () => listDocumentosCatalogo(canPrivado, filtros),
+  });
+
+export const useArticulosFiltro = (filtros: ArticuloFiltros) =>
+  useQuery({
+    queryKey: ['cfg', 'articulo-filtro', filtros],
+    queryFn: () => listArticulosFiltro(filtros),
+  });

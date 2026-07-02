@@ -101,13 +101,38 @@ export const router = createBrowserRouter(
         // --- Configuración (Fase 4: catálogos) ---
         { path: 'config', lazy: () => import('@/features/config/ConfigIndex') },
         { path: 'faena', lazy: () => import('@/features/config/FaenaList') },
+        { path: 'faena/nueva', element: <div className="p-6">Nueva faena (Fase 4)</div> },
+        { path: 'faena/:id/ver', element: <div className="p-6">Detalle de faena (Fase 4)</div> },
+        { path: 'faena/:id/editar', element: <div className="p-6">Editar faena (Fase 4)</div> },
         { path: 'cargo', lazy: () => import('@/features/config/CargoList') },
+        { path: 'cargo/nuevo', element: <div className="p-6">Nuevo cargo (Fase 4)</div> },
+        { path: 'cargo/:id/ver', element: <div className="p-6">Detalle de cargo (Fase 4)</div> },
+        { path: 'cargo/:id/editar', element: <div className="p-6">Editar cargo (Fase 4)</div> },
         { path: 'documento', lazy: () => import('@/features/config/DocumentoList') },
+        { path: 'documento/nuevo', element: <div className="p-6">Nuevo documento (Fase 4)</div> },
+        { path: 'documento/:id/ver', element: <div className="p-6">Detalle de documento (Fase 4)</div> },
+        { path: 'documento/:id/editar', element: <div className="p-6">Editar documento (Fase 4)</div> },
         { path: 'empresa', lazy: () => import('@/features/config/EmpresaList') },
+        { path: 'empresa/nueva', element: <div className="p-6">Nueva empresa (Fase 4)</div> },
+        { path: 'empresa/:id/ver', element: <div className="p-6">Detalle de empresa (Fase 4)</div> },
+        { path: 'empresa/:id/editar', element: <div className="p-6">Editar empresa (Fase 4)</div> },
         { path: 'empresa-cliente', lazy: () => import('@/features/config/EmpresaClienteList') },
+        { path: 'empresa-cliente/nueva', element: <div className="p-6">Nueva empresa cliente (Fase 4)</div> },
+        { path: 'empresa-cliente/:id/ver', element: <div className="p-6">Detalle de empresa cliente (Fase 4)</div> },
+        { path: 'empresa-cliente/:id/editar', element: <div className="p-6">Editar empresa cliente (Fase 4)</div> },
         { path: 'articulo', lazy: () => import('@/features/config/ArticuloList') },
+        { path: 'articulo/nuevo', element: <div className="p-6">Nuevo artículo (Fase 4)</div> },
+        { path: 'articulo/:id/ver', element: <div className="p-6">Detalle de artículo (Fase 4)</div> },
+        { path: 'articulo/:id/editar', element: <div className="p-6">Editar artículo (Fase 4)</div> },
         { path: 'tipo-equipo', lazy: () => import('@/features/config/TipoEquipoList') },
+        { path: 'tipoEquipo', lazy: () => import('@/features/config/TipoEquipoList') }, // alias ruta real (camelCase)
+        { path: 'tipo-equipo/nuevo', element: <div className="p-6">Nuevo tipo de equipo (Fase 4)</div> },
+        { path: 'tipo-equipo/:id/ver', element: <div className="p-6">Detalle de tipo de equipo (Fase 4)</div> },
+        { path: 'tipo-equipo/:id/editar', element: <div className="p-6">Editar tipo de equipo (Fase 4)</div> },
+        // Avisos: en el real toda la ruta está gateada por ROLE_ADMIN/SUPERADMINISTRADOR
         { path: 'aviso-mantenimiento', lazy: () => import('@/features/config/AvisoMantenimientoList') },
+        { path: 'aviso-mantenimiento/nuevo', element: <div className="p-6">Nuevo aviso (Fase 4)</div> },
+        { path: 'aviso-mantenimiento/:id/editar', element: <div className="p-6">Editar aviso (Fase 4)</div> },
         // --- Resto de dominios (se irán poblando): cuadrilla, evaluacion, herramienta... ---
 
         // --- BI (Fase 6) ---

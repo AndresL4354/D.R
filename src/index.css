@@ -432,6 +432,8 @@
 .app-status-pill--danger { background: var(--app-color-danger-bg); color: var(--app-color-danger); }
 .app-status-pill--info { background: var(--app-color-info-bg); color: var(--app-color-info); }
 .app-status-pill--brand { background: var(--app-color-brand-tint); color: var(--app-color-brand); }
+/* Modificador no estándar usado por Avisos de mantenimiento (equivale a success). */
+.app-status-pill--ok { background: var(--app-color-success-bg); color: var(--app-color-success); }
 
 /* ----- Avatar ----- */
 .app-avatar {
