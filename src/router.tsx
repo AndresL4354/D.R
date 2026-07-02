@@ -72,11 +72,22 @@ export const router = createBrowserRouter(
         { path: 'reporte-flash', lazy: () => import('@/features/reporte-flash/ReporteFlashList') },
         { path: 'reporte-flash/:id', lazy: () => import('@/features/reporte-flash/ReporteFlashDetail') },
 
-        // --- Logística (Fase 4) ---
+        // --- Logística (Fase 4) — en el real son vistas POR PROYECTO (desde Asociar) ---
         { path: 'logistica', lazy: () => import('@/features/logistica/LogisticaIndex') },
         { path: 'pasaje', lazy: () => import('@/features/logistica/PasajeList') },
+        { path: 'pasaje/:idProyecto', lazy: () => import('@/features/logistica/PasajeList') },
+        { path: 'pasaje/:idProyecto/nuevo', element: <div className="p-6">Nuevo pasaje (Fase 4)</div> },
+        { path: 'pasaje/:id/ver', element: <div className="p-6">Detalle de pasaje (Fase 4)</div> },
         { path: 'citacion', lazy: () => import('@/features/logistica/CitacionList') },
+        { path: 'citacion/:idProyecto', lazy: () => import('@/features/logistica/CitacionList') },
+        { path: 'citacion/:idProyecto/nueva', element: <div className="p-6">Nueva citación (Fase 4)</div> },
+        { path: 'citacion/:id/ver', element: <div className="p-6">Detalle de citación (Fase 4)</div> },
+        { path: 'citacion/:id/editar', element: <div className="p-6">Editar citación (Fase 4)</div> },
         { path: 'hospedaje', lazy: () => import('@/features/logistica/HospedajeList') },
+        { path: 'hospedaje/:idProyecto', lazy: () => import('@/features/logistica/HospedajeList') },
+        { path: 'hospedaje/:idProyecto/nuevo', element: <div className="p-6">Nuevo hospedaje (Fase 4)</div> },
+        { path: 'hospedaje/:id/ver', element: <div className="p-6">Detalle de hospedaje (Fase 4)</div> },
+        { path: 'hospedaje/:id/editar', element: <div className="p-6">Editar hospedaje (Fase 4)</div> },
         // --- Configuración (Fase 4: catálogos) ---
         { path: 'config', lazy: () => import('@/features/config/ConfigIndex') },
         { path: 'faena', lazy: () => import('@/features/config/FaenaList') },
