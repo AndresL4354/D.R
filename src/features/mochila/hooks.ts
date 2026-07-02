@@ -3,7 +3,9 @@ import {
   getArticulosMochila,
   getInspecciones,
   getMochila,
+  listInspeccionesMochila,
   listMochilas,
+  listMochilasListado,
   type ListMochilasParams,
 } from './api';
 
@@ -12,6 +14,20 @@ export function useMochilas(params: ListMochilasParams) {
     queryKey: ['mochila', 'list', params],
     queryFn: () => listMochilas(params),
     placeholderData: (prev) => prev,
+  });
+}
+
+/** Listado clon (RPC mochilas_listado). */
+export function useMochilasListado() {
+  return useQuery({ queryKey: ['mochila', 'listado'], queryFn: listMochilasListado });
+}
+
+/** Inspecciones clon (RPC inspecciones_mochila). */
+export function useInspeccionesMochila(idMochila: number) {
+  return useQuery({
+    queryKey: ['mochila', 'inspecciones-listado', idMochila],
+    queryFn: () => listInspeccionesMochila(idMochila),
+    enabled: Number.isFinite(idMochila) && idMochila > 0,
   });
 }
 

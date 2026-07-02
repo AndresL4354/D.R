@@ -1,39 +1,45 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ClipboardCheck, Download, Eye, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Eye, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useMochilasListado } from './hooks';
+import { useInspeccionesMochila, useMochila } from './hooks';
 import { RowActionsMenu } from '@/components/common/RowActionsMenu';
 import { useRole } from '@/features/auth/useRole';
 import { formatMediumDatetime } from '@/lib/utils';
 
 /**
  * Exportado como `Component` para el `lazy` del router. Clon de
- * mochila-spdc.component.html (list): findAll plano (sin filtros/orden/
- * paginación), columnas ID(#)/Número/Usuario(login)/Fecha + kebab con
- * Inspecciones/Ver/Editar/Descargar Excel/Eliminar (gated).
+ * inspeccion-mochila.component.html: título 'Inspecciones de mochila N.º {numero}',
+ * pill ¿Mantención? (info Sí / muted No), Servicio/Trabajador vía entrega ('N/A').
  */
 export function Component() {
+  const { id } = useParams();
+  const idMochila = Number(id);
   const navigate = useNavigate();
   const { hasAnyRole } = useRole();
-  const { data: mochilas, isLoading, isError } = useMochilasListado();
+  const { data: mochila } = useMochila(idMochila);
+  const { data: inspecciones, isLoading, isError } = useInspeccionesMochila(idMochila);
   const canDelete = hasAnyRole(['ROLE_ADMIN', 'SUPERADMINISTRADOR', 'SUPERADMINISTRADOR BP']);
 
   return (
     <div>
       <ul className="app-breadcrumb">
-        <li className="active">Mochilas SPDC</li>
+        <li>
+          <Link to="/mochila-spdc">Mochilas SPDC</Link>
+        </li>
+        <li aria-hidden>›</li>
+        <li className="active">Inspecciones de mochila N.º {mochila?.numero ?? ''}</li>
       </ul>
 
       <div className="app-page-header">
         <div className="app-page-header__main">
           <div>
-            <h1 className="app-page-title">Mochilas SPDC</h1>
+            <h1 className="app-page-title">Inspecciones de mochila N.º {mochila?.numero ?? ''}</h1>
             <p className="app-page-subtitle">
-              Listado de mochilas registradas
-              {(mochilas?.length ?? 0) > 0 && (
+              Listado de inspecciones registradas
+              {(inspecciones?.length ?? 0) > 0 && (
                 <>
                   {' '}
-                  · <strong>{mochilas!.length}</strong> resultados
+                  · <strong>{inspecciones!.length}</strong> resultados
                 </>
               )}
             </p>
@@ -43,8 +49,8 @@ export function Component() {
           <button type="button" className="btn btn-secondary" onClick={() => navigate(-1)}>
             <ArrowLeft size={16} /> Volver
           </button>
-          <Link to="/mochila-spdc/nueva" className="btn btn-primary">
-            <Plus size={16} /> Nueva mochila
+          <Link to={`/mochila-spdc/${idMochila}/inspeccion/nueva`} className="btn btn-primary">
+            <Plus size={16} /> Nueva inspección
           </Link>
         </div>
       </div>
@@ -56,69 +62,70 @@ export function Component() {
       )}
       {isError && (
         <div className="app-empty-state" style={{ color: 'var(--app-color-danger)' }}>
-          Error al cargar mochilas (dominio exclusivo de SERVICIOS ALTA).
+          Error al cargar inspecciones.
         </div>
       )}
 
-      {!isLoading && !isError && (mochilas?.length ?? 0) === 0 && (
+      {!isLoading && !isError && (inspecciones?.length ?? 0) === 0 && (
         <div className="app-card">
           <div className="app-card-body">
             <div className="app-empty-state">
-              <p className="app-empty-state__title">No se encontraron mochilas</p>
+              <p className="app-empty-state__title">No se encontraron inspecciones</p>
               Crea una nueva para comenzar.
             </div>
           </div>
         </div>
       )}
 
-      {(mochilas?.length ?? 0) > 0 && (
+      {(inspecciones?.length ?? 0) > 0 && (
         <div className="app-table-wrap">
           <table className="app-table app-table--hover">
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Número</th>
-                <th>Usuario</th>
+                <th>¿Mantención?</th>
+                <th>Servicio</th>
+                <th>Trabajador</th>
+                <th>Usuario creación</th>
                 <th>Fecha</th>
                 <th style={{ width: 56 }} />
               </tr>
             </thead>
             <tbody>
-              {mochilas!.map((m) => (
-                <tr key={m.id}>
-                  <td className="font-semibold">#{m.id}</td>
-                  <td>{m.numero}</td>
-                  <td>{m.usuario}</td>
-                  <td>{formatMediumDatetime(m.fecha_creacion)}</td>
+              {inspecciones!.map((i) => (
+                <tr key={i.id}>
+                  <td className="font-semibold">#{i.id}</td>
+                  <td>
+                    <span
+                      className={`app-status-pill ${i.mantencion ? 'app-status-pill--info' : 'app-status-pill--muted'}`}
+                    >
+                      <span className="app-status-pill__dot" />
+                      {i.mantencion ? 'Sí' : 'No'}
+                    </span>
+                  </td>
+                  <td>{i.servicio || 'N/A'}</td>
+                  <td>{i.trabajador || 'N/A'}</td>
+                  <td>{i.usuario_creacion || 'N/A'}</td>
+                  <td>{formatMediumDatetime(i.fecha)}</td>
                   <td>
                     <RowActionsMenu
                       actions={[
                         {
-                          label: 'Inspecciones',
-                          icon: <ClipboardCheck size={16} />,
-                          onClick: () => navigate(`/mochila-spdc/${m.id}/inspeccion`),
-                        },
-                        {
                           label: 'Ver',
                           icon: <Eye size={16} />,
-                          onClick: () => navigate(`/mochila-spdc/${m.id}`),
+                          onClick: () => navigate(`/mochila-spdc/${idMochila}/inspeccion/${i.id}/ver`),
                         },
                         {
                           label: 'Editar',
                           icon: <Pencil size={16} />,
-                          onClick: () => navigate(`/mochila-spdc/${m.id}/editar`),
-                        },
-                        {
-                          label: 'Descargar Excel',
-                          icon: <Download size={16} />,
-                          onClick: () => toast.info('Descargar Excel: disponible en Fase 5.'),
+                          onClick: () => navigate(`/mochila-spdc/${idMochila}/inspeccion/${i.id}/editar`),
                         },
                         {
                           label: 'Eliminar',
                           icon: <Trash2 size={16} />,
                           show: canDelete,
                           onClick: () =>
-                            toast.info('Eliminar mochila: disponible al portar la mutación (Fase 3).'),
+                            toast.info('Eliminar inspección: disponible al portar la mutación (Fase 3).'),
                         },
                       ]}
                     />

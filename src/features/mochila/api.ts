@@ -20,6 +20,38 @@ export async function listMochilas(params: ListMochilasParams) {
   return { rows: data ?? [], total: count ?? 0 };
 }
 
+// ---- Listado clon (RPC mochilas_listado — findAll + login de jhi_user) ----
+export interface MochilaListRow {
+  id: number;
+  numero: string | null;
+  usuario: string | null;
+  fecha_creacion: string | null;
+}
+
+export async function listMochilasListado(): Promise<MochilaListRow[]> {
+  const { data, error } = await supabase.rpc('mochilas_listado' as never);
+  if (error) throw error;
+  return (data ?? []) as MochilaListRow[];
+}
+
+// ---- Inspecciones clon (RPC inspecciones_mochila — join entrega→persona/proyecto) ----
+export interface InspeccionListRow {
+  id: number;
+  mantencion: boolean | null;
+  servicio: string | null;
+  trabajador: string | null;
+  usuario_creacion: string | null;
+  fecha: string | null;
+}
+
+export async function listInspeccionesMochila(idMochila: number): Promise<InspeccionListRow[]> {
+  const { data, error } = await supabase.rpc('inspecciones_mochila' as never, {
+    p_id_mochila: idMochila,
+  } as never);
+  if (error) throw error;
+  return (data ?? []) as InspeccionListRow[];
+}
+
 export async function getMochila(id: number): Promise<MochilaSpdc | null> {
   const { data, error } = await supabase.from('mochila_spdc').select('*').eq('id', id).maybeSingle();
   if (error) throw error;

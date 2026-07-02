@@ -1,8 +1,3 @@
-// =============================================================================
-// database.types.ts — GENERADO desde el esquema real de Supabase (D.R Demo).
-// Regenerar con: npm run gen:types. NO editar a mano.
-// =============================================================================
-
 export type Json =
   | string
   | number
@@ -67,7 +62,7 @@ export type Database = {
         }
         Insert: {
           descripcion?: string | null
-          id: number
+          id?: number
           id_reporte_flash?: number | null
           ubicacion_documento?: string | null
         }
@@ -91,7 +86,7 @@ export type Database = {
         Insert: {
           descripcion?: string | null
           fecha_sistema?: string | null
-          id: number
+          id?: number
           id_proyecto?: number | null
           nombre?: string | null
           usuario_sistema?: string | null
@@ -117,7 +112,7 @@ export type Database = {
         Insert: {
           comentario?: string | null
           evidencias?: string | null
-          id: number
+          id?: number
           id_tarea?: number | null
           tipo_alerta?: string | null
         }
@@ -151,7 +146,7 @@ export type Database = {
           descripcion?: string | null
           fecha_expiracion?: string | null
           fecha_fabricacion?: string | null
-          id: number
+          id?: number
           identificador?: boolean | null
           marca?: string | null
           modelo?: string | null
@@ -182,7 +177,7 @@ export type Database = {
           id_cargo: number | null
         }
         Insert: {
-          id: number
+          id?: number
           id_articulo?: number | null
           id_cargo?: number | null
         }
@@ -241,7 +236,7 @@ export type Database = {
           created_date?: string | null
           duracion_minutos?: number | null
           fecha_inicio?: string | null
-          id: number
+          id?: number
           last_modified_by?: string | null
           last_modified_date?: string | null
           mensaje?: string | null
@@ -276,7 +271,7 @@ export type Database = {
           descripcio_bloqueo?: string | null
           estado?: string | null
           fecha_bloqueo?: string | null
-          id: number
+          id?: number
           id_persona?: number | null
           motivo_bloqueo?: string | null
           usuario?: string | null
@@ -302,7 +297,7 @@ export type Database = {
         }
         Insert: {
           descripcion?: string | null
-          id: number
+          id?: number
           nombre?: string | null
           tipo_cargo?: string | null
           valor_turno?: number | null
@@ -325,7 +320,7 @@ export type Database = {
         }
         Insert: {
           cantidad_personal?: number | null
-          id: number
+          id?: number
           id_cargo?: number | null
           id_tipo_cuadrilla?: number | null
         }
@@ -350,7 +345,7 @@ export type Database = {
         Insert: {
           cantidad?: number | null
           cantidad_noche?: number | null
-          id: number
+          id?: number
           id_cargo?: number | null
           id_proyecto?: number | null
           nombre_cargo?: string | null
@@ -377,7 +372,7 @@ export type Database = {
         Insert: {
           descripcion?: string | null
           empresa_cliente?: number | null
-          id: number
+          id?: number
           nombre_categoria?: string | null
         }
         Update: {
@@ -395,7 +390,7 @@ export type Database = {
         }
         Insert: {
           fecha_citacion?: string | null
-          id: number
+          id?: number
         }
         Update: {
           fecha_citacion?: string | null
@@ -414,7 +409,7 @@ export type Database = {
         Insert: {
           codigo_unico_territorial?: number | null
           descripcion?: string | null
-          id: number
+          id?: number
           id_region?: number | null
           nombre?: string | null
         }
@@ -437,7 +432,7 @@ export type Database = {
         Insert: {
           descripcion?: string | null
           fecha?: string | null
-          id: number
+          id?: number
           riesgo_fatalidad_asociado?: string | null
         }
         Update: {
@@ -459,7 +454,7 @@ export type Database = {
         }
         Insert: {
           estado?: string | null
-          id: number
+          id?: number
           id_responsable?: number | null
           id_tipo_cuadrilla?: number | null
           nombre?: string | null
@@ -519,7 +514,7 @@ export type Database = {
           cantidad?: number | null
           color?: string | null
           entregado?: boolean | null
-          id: number
+          id?: number
           id_articulo?: number | null
           id_detalle_mantenido?: number | null
           id_entrega?: number | null
@@ -564,7 +559,7 @@ export type Database = {
           categoria_documento?: string | null
           descripcion?: string | null
           empresa?: string | null
-          id: number
+          id?: number
           nombre?: string | null
           privado?: boolean | null
           requerido?: boolean | null
@@ -594,7 +589,7 @@ export type Database = {
           ruta: string | null
         }
         Insert: {
-          id: number
+          id?: number
           id_cuadrilla?: number | null
           id_documento?: number | null
           ruta?: string | null
@@ -615,7 +610,7 @@ export type Database = {
           ubicacion: string | null
         }
         Insert: {
-          id: number
+          id?: number
           id_reporte_flash?: number | null
           nombre?: string | null
           ubicacion?: string | null
@@ -637,7 +632,7 @@ export type Database = {
         }
         Insert: {
           cantidad_documentos?: number | null
-          id: number
+          id?: number
           id_documento?: number | null
           id_tipo_cuadrilla?: number | null
         }
@@ -660,7 +655,7 @@ export type Database = {
         }
         Insert: {
           categoria_documento?: string | null
-          id: number
+          id?: number
           id_cargo?: number | null
           nombre?: string | null
           privado?: boolean | null
@@ -691,7 +686,7 @@ export type Database = {
         Insert: {
           documento?: string | null
           fecha_vencimiento?: string | null
-          id: number
+          id?: number
           id_persona?: number | null
           nombre_documento?: string | null
           semaforo?: string | null
@@ -731,7 +726,7 @@ export type Database = {
           descripcion?: string | null
           direccion?: string | null
           estado?: string | null
-          id: number
+          id?: number
           id_ciudad?: number | null
           logo_uri_blanco?: string | null
           logo_uri_color?: string | null
@@ -774,7 +769,7 @@ export type Database = {
           descripcion?: string | null
           direccion?: string | null
           estado?: string | null
-          id: number
+          id?: number
           id_ciudad?: number | null
           nit?: string | null
           persona_contacto?: string | null
@@ -813,7 +808,7 @@ export type Database = {
         Insert: {
           comentarios?: string | null
           fecha_creacion?: string | null
-          id: number
+          id?: number
           id_cargo?: number | null
           id_faena?: number | null
           id_mochila_spdc?: number | null
@@ -858,7 +853,7 @@ export type Database = {
           asignado?: boolean | null
           color?: string | null
           estado?: string | null
-          id: number
+          id?: number
           id_interno?: string | null
           id_persona_asignada?: number | null
           id_tipo_equipo?: number | null
@@ -894,7 +889,7 @@ export type Database = {
           id_responsable: number | null
         }
         Insert: {
-          id: number
+          id?: number
           id_cuadrilla?: number | null
           id_equipo?: number | null
           id_responsable?: number | null
@@ -915,7 +910,7 @@ export type Database = {
         }
         Insert: {
           descripcion?: string | null
-          id: number
+          id?: number
           nombre?: string | null
         }
         Update: {
@@ -944,7 +939,7 @@ export type Database = {
           comentario?: string | null
           fecha?: string | null
           horas_vertical?: number | null
-          id: number
+          id?: number
           id_persona?: number | null
           id_proyecto?: number | null
           levanta_mano?: string | null
@@ -984,7 +979,7 @@ export type Database = {
         Insert: {
           apto?: boolean | null
           comentario?: string | null
-          id: number
+          id?: number
           id_articulo?: number | null
           id_inspeccion?: number | null
           respuesta_funcional?: string | null
@@ -1016,7 +1011,7 @@ export type Database = {
           descripcion?: string | null
           empresa?: string | null
           fecha_sistema?: string | null
-          id: number
+          id?: number
           nombre?: string | null
           usuario_sistema?: string | null
         }
@@ -1039,7 +1034,7 @@ export type Database = {
           nombre_usuario: string | null
         }
         Insert: {
-          id: number
+          id?: number
           id_faena?: number | null
           id_usuario?: number | null
           nombre_faena?: string | null
@@ -1061,7 +1056,7 @@ export type Database = {
           idfaena: number | null
         }
         Insert: {
-          id: number
+          id?: number
           idcargo?: number | null
           idfaena?: number | null
         }
@@ -1079,7 +1074,7 @@ export type Database = {
           id_faenid_usuario: number | null
         }
         Insert: {
-          id: number
+          id?: number
           id_faena?: number | null
           id_faenid_usuario?: number | null
         }
@@ -1099,7 +1094,7 @@ export type Database = {
         }
         Insert: {
           descripcion?: string | null
-          id: number
+          id?: number
           id_estado?: number | null
           nombre?: string | null
         }
@@ -1122,7 +1117,7 @@ export type Database = {
         Insert: {
           accion?: string | null
           fecha?: string | null
-          id: number
+          id?: number
           id_mochila_spdc: number
           id_user: number
         }
@@ -1155,7 +1150,7 @@ export type Database = {
           fecha_creacion?: string | null
           fecha_fin?: string | null
           fecha_inicio?: string | null
-          id: number
+          id?: number
           numero_orden_trabajo?: string | null
           porcentaje_avance?: number | null
           terminada?: boolean | null
@@ -1190,7 +1185,7 @@ export type Database = {
           fecha_ingreso?: string | null
           fecha_salida?: string | null
           hotel?: string | null
-          id: number
+          id?: number
         }
         Update: {
           direccion?: string | null
@@ -1208,7 +1203,7 @@ export type Database = {
           id_riesgos_fatalidad: number | null
         }
         Insert: {
-          id: number
+          id?: number
           id_reporte_flash?: number | null
           id_riesgos_fatalidad?: number | null
         }
@@ -1233,7 +1228,7 @@ export type Database = {
         Insert: {
           exposicion?: string | null
           fecha?: string | null
-          id: number
+          id?: number
           id_entrega?: number | null
           id_mochila?: number | null
           mantencion?: boolean | null
@@ -1261,7 +1256,7 @@ export type Database = {
           rol_investigacion: string | null
         }
         Insert: {
-          id: number
+          id?: number
           id_incidente?: number | null
           id_usuario?: number | null
           nombre_usuario?: string | null
@@ -1317,7 +1312,7 @@ export type Database = {
           email?: string | null
           empresa?: string | null
           first_name?: string | null
-          id: number
+          id?: number
           id_gesta_os?: string | null
           image_url?: string | null
           lang_key?: string | null
@@ -1391,7 +1386,7 @@ export type Database = {
         }
         Insert: {
           fecha_registro?: string | null
-          id: number
+          id?: number
           mensaje?: string | null
           nombre?: string | null
           usuario?: string | null
@@ -1412,7 +1407,7 @@ export type Database = {
           id_mochila_spdc: number
         }
         Insert: {
-          id: number
+          id?: number
           id_articulo: number
           id_mochila_spdc: number
         }
@@ -1435,7 +1430,7 @@ export type Database = {
         Insert: {
           fecha_creacion?: string | null
           fecha_modificacion?: string | null
-          id: number
+          id?: number
           id_user_creacion: number
           id_user_modificacion?: number | null
           numero?: string | null
@@ -1460,7 +1455,7 @@ export type Database = {
         Insert: {
           comentario?: string | null
           evidencias?: string | null
-          id: number
+          id?: number
           id_tarea?: number | null
         }
         Update: {
@@ -1481,7 +1476,7 @@ export type Database = {
         Insert: {
           descripcion?: string | null
           fecha?: string | null
-          id: number
+          id?: number
           id_estado?: number | null
         }
         Update: {
@@ -1501,7 +1496,7 @@ export type Database = {
         }
         Insert: {
           descripcion?: string | null
-          id: number
+          id?: number
           indicativo?: string | null
           nombre?: string | null
         }
@@ -1532,7 +1527,7 @@ export type Database = {
           fecha_llegada?: string | null
           fecha_salida?: string | null
           hasta?: string | null
-          id: number
+          id?: number
           id_persona?: number | null
           id_proyecto?: number | null
           medio?: string | null
@@ -1753,7 +1748,7 @@ export type Database = {
           nombre_persona: string | null
         }
         Insert: {
-          id: number
+          id?: number
           id_empresa?: number | null
           id_persona?: number | null
           nombre_empresa?: string | null
@@ -1776,7 +1771,7 @@ export type Database = {
         }
         Insert: {
           cargo?: number | null
-          id: number
+          id?: number
           persona?: number | null
         }
         Update: {
@@ -1800,7 +1795,7 @@ export type Database = {
           estado_anterior?: string | null
           estado_nuevo?: string | null
           fecha_creacion?: string | null
-          id: number
+          id?: number
           id_persona?: number | null
           id_proyecto?: number | null
           usuario_creacion?: string | null
@@ -1842,7 +1837,7 @@ export type Database = {
           fecha_creacion?: string | null
           fecha_gestion_temprana?: string | null
           gestion_temprana?: boolean | null
-          id: number
+          id?: number
           id_cargo?: number | null
           id_persona?: number | null
           id_proyecto?: number | null
@@ -1881,7 +1876,7 @@ export type Database = {
         }
         Insert: {
           fecha?: string | null
-          id: number
+          id?: number
           nombre_responsable?: string | null
           plan?: string | null
           reponsable?: number | null
@@ -1910,7 +1905,7 @@ export type Database = {
         Insert: {
           aprendizaje?: string | null
           causas?: string | null
-          id: number
+          id?: number
           id_incidente?: number | null
           ruta_documento_peppo?: string | null
           ruta_documento_plan?: string | null
@@ -1935,7 +1930,7 @@ export type Database = {
           titulo: string | null
         }
         Insert: {
-          id: number
+          id?: number
           pregunta?: string | null
           tipo?: string | null
           titulo?: string | null
@@ -1955,7 +1950,7 @@ export type Database = {
           privilegio: string | null
         }
         Insert: {
-          id: number
+          id?: number
           id_tipo_usuario?: number | null
           privilegio?: string | null
         }
@@ -1987,7 +1982,7 @@ export type Database = {
           fecha_fin?: string | null
           fecha_inicio?: string | null
           fecha_sistema?: string | null
-          id: number
+          id?: number
           id_faena?: number | null
           nombre?: string | null
           razon_social_empresa?: string | null
@@ -2017,7 +2012,7 @@ export type Database = {
         }
         Insert: {
           descripcion?: string | null
-          id: number
+          id?: number
           id_pais?: number | null
           nombre?: string | null
         }
@@ -2083,7 +2078,7 @@ export type Database = {
           fecha_creacion?: string | null
           fecha_incidente?: string | null
           fecha_revision?: string | null
-          id: number
+          id?: number
           id_control_crit?: number | null
           is_riesgo_fatalidad?: boolean | null
           lesion?: boolean | null
@@ -2140,6 +2135,42 @@ export type Database = {
         }
         Relationships: []
       }
+      reporte_investigacion: {
+        Row: {
+          anexos: string | null
+          aprendizaje: string | null
+          estado: string | null
+          fecha_cierre: string | null
+          fecha_creacion: string | null
+          id: number
+          personas_involucradas: string | null
+          reporte_id: number | null
+          usuario_cierre: string | null
+        }
+        Insert: {
+          anexos?: string | null
+          aprendizaje?: string | null
+          estado?: string | null
+          fecha_cierre?: string | null
+          fecha_creacion?: string | null
+          id?: number
+          personas_involucradas?: string | null
+          reporte_id?: number | null
+          usuario_cierre?: string | null
+        }
+        Update: {
+          anexos?: string | null
+          aprendizaje?: string | null
+          estado?: string | null
+          fecha_cierre?: string | null
+          fecha_creacion?: string | null
+          id?: number
+          personas_involucradas?: string | null
+          reporte_id?: number | null
+          usuario_cierre?: string | null
+        }
+        Relationships: []
+      }
       respuestas: {
         Row: {
           fecha: string | null
@@ -2154,7 +2185,7 @@ export type Database = {
         }
         Insert: {
           fecha?: string | null
-          id: number
+          id?: number
           id_evaluacion?: number | null
           id_persona?: number | null
           id_pregunta: number
@@ -2185,7 +2216,7 @@ export type Database = {
         Insert: {
           descripcion?: string | null
           fecha?: string | null
-          id: number
+          id?: number
         }
         Update: {
           descripcion?: string | null
@@ -2200,7 +2231,7 @@ export type Database = {
           ruta: string | null
         }
         Insert: {
-          id: number
+          id?: number
           ruta?: string | null
         }
         Update: {
@@ -2233,7 +2264,7 @@ export type Database = {
           fecha_cierre?: string | null
           fecha_fin?: string | null
           fecha_inicio?: string | null
-          id: number
+          id?: number
           id_actividad?: number | null
           motivo?: string | null
           nombre?: string | null
@@ -2275,7 +2306,7 @@ export type Database = {
         Insert: {
           cantidad_cuadrillas?: number | null
           estado?: string | null
-          id: number
+          id?: number
           id_proyecto?: number | null
           jornada?: string | null
           turno?: string | null
@@ -2297,7 +2328,7 @@ export type Database = {
           tipo: string | null
         }
         Insert: {
-          id: number
+          id?: number
           nombre?: string | null
           tipo?: string | null
         }
@@ -2317,7 +2348,7 @@ export type Database = {
         }
         Insert: {
           cantidad_equipos?: number | null
-          id: number
+          id?: number
           id_tipo_cuadrilla?: number | null
           id_tipo_equipo?: number | null
         }
@@ -2337,7 +2368,7 @@ export type Database = {
         }
         Insert: {
           descripcion?: string | null
-          id: number
+          id?: number
           nombre?: string | null
         }
         Update: {
@@ -2355,7 +2386,7 @@ export type Database = {
         }
         Insert: {
           descripcion?: string | null
-          id: number
+          id?: number
           nombre?: string | null
         }
         Update: {
@@ -2373,7 +2404,7 @@ export type Database = {
           id_proyecto: number | null
         }
         Insert: {
-          id: number
+          id?: number
           id_citacion?: number | null
           id_persona?: number | null
           id_proyecto?: number | null
@@ -2394,7 +2425,7 @@ export type Database = {
           id_trabajador: number | null
         }
         Insert: {
-          id: number
+          id?: number
           id_cargo?: number | null
           id_cuadrilla?: number | null
           id_trabajador?: number | null
@@ -2433,7 +2464,7 @@ export type Database = {
           id_proyecto: number | null
         }
         Insert: {
-          id: number
+          id?: number
           id_hospedaje?: number | null
           id_persona: number
           id_proyecto?: number | null
@@ -2454,7 +2485,7 @@ export type Database = {
           id_turno: number | null
         }
         Insert: {
-          id: number
+          id?: number
           id_persona: number
           id_proyecto?: number | null
           id_turno?: number | null
@@ -2478,7 +2509,7 @@ export type Database = {
         }
         Insert: {
           fecha_registro?: string | null
-          id: number
+          id?: number
           jsoon?: string | null
           mensaje?: string | null
           metodo?: string | null
@@ -2500,7 +2531,7 @@ export type Database = {
           tipo: string | null
         }
         Insert: {
-          id: number
+          id?: number
           tipo?: string | null
         }
         Update: {
@@ -2516,7 +2547,7 @@ export type Database = {
           id_usuario: number | null
         }
         Insert: {
-          id: number
+          id?: number
           id_tarea?: number | null
           id_usuario?: number | null
         }
@@ -2534,9 +2565,120 @@ export type Database = {
     Functions: {
       auth_empresa: { Args: never; Returns: string }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      despachos_listado: {
+        Args: {
+          p_estado?: string
+          p_fecha_fin?: string
+          p_fecha_inicio?: string
+          p_id_faena?: number
+          p_id_proyecto?: number
+          p_limit?: number
+          p_offset?: number
+        }
+        Returns: {
+          acreditados: number
+          asistencia: number
+          bodega: number
+          cumplimiento: number
+          cursos: number
+          despachados: number
+          estado: string
+          faena: string
+          fecha_despacho: string
+          id: number
+          nombre_despacho: string
+          proyecto_nombre: string
+          sso: number
+          total: number
+          total_personas: number
+          transporte: number
+        }[]
+      }
+      entregas_listado: {
+        Args: {
+          p_fecha_fin?: string
+          p_fecha_inicio?: string
+          p_id?: number
+          p_id_faena?: number
+          p_id_proyecto?: number
+          p_limit?: number
+          p_nombre?: string
+          p_offset?: number
+          p_rut?: string
+          p_usuario_entrega?: string
+        }
+        Returns: {
+          faena: string
+          fecha_creacion: string
+          id: number
+          servicio: string
+          total: number
+          trabajador: string
+          usuario_entrega: string
+        }[]
+      }
       es_alta: { Args: never; Returns: boolean }
       es_gesta: { Args: never; Returns: boolean }
       has_role: { Args: { r: string }; Returns: boolean }
+      inspecciones_mochila: {
+        Args: { p_id_mochila: number }
+        Returns: {
+          fecha: string
+          id: number
+          mantencion: boolean
+          servicio: string
+          trabajador: string
+          usuario_creacion: string
+        }[]
+      }
+      mochilas_listado: {
+        Args: never
+        Returns: {
+          fecha_creacion: string
+          id: number
+          numero: string
+          usuario: string
+        }[]
+      }
+      notificaciones_documentos: {
+        Args: never
+        Returns: {
+          por_vencer: number
+          vencidos: number
+        }[]
+      }
+      persona_comunas: {
+        Args: never
+        Returns: {
+          comuna: string
+        }[]
+      }
+      persona_visible: { Args: { pid: number }; Returns: boolean }
+      personas_listado: {
+        Args: {
+          p_comuna?: string
+          p_empresa?: string
+          p_estado?: string
+          p_id_cargo?: number
+          p_id_faena?: number
+          p_limit?: number
+          p_nombre?: string
+          p_offset?: number
+          p_rut?: string
+        }
+        Returns: {
+          cargos: string
+          comuna: string
+          estado_persona: string
+          id: number
+          nombre_completo: string
+          num_id: string
+          servicio: string
+          telefono: string
+          total: number
+        }[]
+      }
+      proyecto_visible: { Args: { pid: number }; Returns: boolean }
       tiene_rol_despacho: { Args: never; Returns: boolean }
     }
     Enums: {

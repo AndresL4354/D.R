@@ -55,7 +55,13 @@ export const router = createBrowserRouter(
 
         // --- Mochila SPDC (Fase 3, dominio ALTA) ---
         { path: 'mochila-spdc', lazy: () => import('@/features/mochila/MochilaList') },
+        { path: 'mochila-spdc/nueva', element: <div className="p-6">Nueva mochila (Fase 3)</div> },
         { path: 'mochila-spdc/:id', lazy: () => import('@/features/mochila/MochilaDetail') },
+        { path: 'mochila-spdc/:id/editar', element: <div className="p-6">Editar mochila (Fase 3)</div> },
+        { path: 'mochila-spdc/:id/inspeccion', lazy: () => import('@/features/mochila/InspeccionMochilaList') },
+        { path: 'mochila-spdc/:id/inspeccion/nueva', element: <div className="p-6">Nueva inspección (Fase 3)</div> },
+        { path: 'mochila-spdc/:id/inspeccion/:idInspeccion/ver', element: <div className="p-6">Detalle de inspección (Fase 3)</div> },
+        { path: 'mochila-spdc/:id/inspeccion/:idInspeccion/editar', element: <div className="p-6">Editar inspección (Fase 3)</div> },
         { path: 'epp', lazy: () => import('@/features/epp/EppIndex') },
 
         // --- Evaluaciones (Fase 4) ---
@@ -71,6 +77,10 @@ export const router = createBrowserRouter(
         // --- Seguridad / Reportes Flash (Fase 4) ---
         { path: 'reporte-flash', lazy: () => import('@/features/reporte-flash/ReporteFlashList') },
         { path: 'reporte-flash/:id', lazy: () => import('@/features/reporte-flash/ReporteFlashDetail') },
+        // Investigaciones (/investigacion — único listado vivo del dominio en el real)
+        { path: 'investigacion', lazy: () => import('@/features/reporte-flash/InvestigacionList') },
+        { path: 'investigacion/nueva', element: <div className="p-6">Nueva investigación (Fase 4)</div> },
+        { path: 'investigacion/:id/ver', element: <div className="p-6">Detalle de investigación (Fase 4)</div> },
 
         // --- Logística (Fase 4) — en el real son vistas POR PROYECTO (desde Asociar) ---
         { path: 'logistica', lazy: () => import('@/features/logistica/LogisticaIndex') },
