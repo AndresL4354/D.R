@@ -1,7 +1,9 @@
 # docnomina-web — Estado real vs. plan, y ajustes
 
-> **Fecha:** 2026-06-30 · Documento vivo. Acompaña a `plan_refactor_react_supabase_20260630.md` (el plan original NO se reescribe; aquí se registra el estado medido y los ajustes derivados de lo construido/encontrado).
+> **Fecha:** 2026-06-30 · **Última actualización: 2026-07-02** · Documento vivo. Acompaña a `plan_refactor_react_supabase_20260630.md` (el plan original NO se reescribe; aquí se registra el estado medido y los ajustes derivados de lo construido/encontrado).
 > **Repo:** `AndresL4354/D.R` (rama única `main`). **Supabase:** proyecto `sfuwzgcvmczsoydueeog` ("D.R Demo").
+
+> **Hito 2026-07-02 — Mutaciones de negocio (Fase 3) COMPLETAS:** portadas con paridad y verificadas con pgTAP contra la BD (52 aserciones, 4 suites) las mutaciones de **Proyecto** (crear/editar/finalizar/activar/eliminar + cargos, `0024`), **Persona** (estado/bloqueo/verificar-docs/eliminar + QR client-side, `0025`), **Asociación Persona↔Proyecto** (asignar/oficializar/backup/eliminar/reasociar/cambiar-cargo/acreditar/gestión-temprana, `0026` + pantalla `AsociarPersonas`) y **Despacho** (acciones por trabajador con gating `DESPACHO_*`, toggle in-line por email, cascada 'En Faena', finalizar/eliminar/CRUD, `0027` + grilla en `DespachoDetail`). CI (lint→typecheck→build) verde en `main`; 152 `jhi_user`→`perfil` migrados. Método: workflows multi-agente sobre el Angular/Java real + verificación adversarial del diff.
 
 ---
 
@@ -9,10 +11,10 @@
 
 | Fase | Plan | Estado real | Detalle |
 |---|---|---|---|
-| **0. Fundaciones** | scaffold, proyecto Supabase, esquema, gen types, CI, índices BI | 🟢 **~90%** | Scaffold Vite/TS/Tailwind/shadcn/Query/Router ✅. Esquema (85 tablas) migrado vía pg_restore + 17 migraciones ✅. `gen types` ✅. **Falta:** CI (no existe), índices BI (`optimizacion_bi_indices.sql` no cargado). |
+| **0. Fundaciones** | scaffold, proyecto Supabase, esquema, gen types, CI, índices BI | 🟢 **~90%** | Scaffold Vite/TS/Tailwind/shadcn/Query/Router ✅. Esquema (85 tablas) migrado vía pg_restore + 27 migraciones ✅. `gen types` ✅. **CI** (lint→typecheck→build en `main`) ✅. **Falta:** índices BI (`optimizacion_bi_indices.sql` no cargado). |
 | **1. Auth + SSO** | perfil, Auth Hook, sso-consume/users, Login/SsoCallback, RequireAuth/Role | 🟡 **funcional pero parcial** | perfil ✅, Auth Hook ✅ **(estaba ROTO hasta `0017` — ver §3.1)**, `sso-consume` (122 líneas, real) ✅, `sso-users` ✅, LoginPage/SsoCallbackPage ✅, RequireAuth/RequireRole ✅. **Falta:** migrar los ~152 `jhi_user`→`perfil` (hoy solo existe el admin `leo.mora`). |
-| **2. RLS base + Persona** | helpers RLS, policies multi-tenant, Persona **completa** (list/detail/docs/QR/bloqueo/servicios) + RPC + pgTAP + paridad | 🟡 **~40%** | Helpers (`auth_empresa`,`has_role`,`es_alta`,`es_gesta`,`persona_visible`) ✅. Policies multi-tenant ✅ y aislamiento verificado a mano. PersonaList ✅ (simple), **PersonaDetail = clon fiel** ✅. **Falta:** sub-páginas docs/QR/**bloqueo**/servicios (son placeholders), los **40+ RPC de persona** (solo `persona_es_nueva` y `notificaciones_documentos` portados), y **pgTAP (no existe)**. |
-| **3. Dominios core** | Despacho(+trigger), Proyecto(asociar/oficializar), Cuadrilla, EntregaEPP, Mochila SPDC | 🟡 **~40%** | Listados clonados con datos reales: **Servicios/Proyecto** ✅ y **Despacho** ✅ — este último con su **motor de cumplimiento** portado verbatim (`despachos_listado`, RPC 0019: conteos por categoría + cumplimiento %, contra `accion_despacho`/`persona_proyecto`). Trigger auditoría despacho ✅. **Falta:** las **mutaciones** (asociar personal, oficializar, finalizar/activar, cambio de estado en UI) y **Cuadrilla**. |
+| **2. RLS base + Persona** | helpers RLS, policies multi-tenant, Persona **completa** (list/detail/docs/QR/bloqueo/servicios) + RPC + pgTAP + paridad | 🟢 **~70%** | Helpers + policies multi-tenant ✅, **pgTAP** de aislamiento RLS ✅ (`rls_smoke`, 12 aserciones). PersonaList/Detail clon fiel ✅. **Mutaciones de Persona ✅** (cambiar estado con cascada, bloqueo/desbloqueo, verificar-documentos, eliminar — `0025`; QR client-side ✅; flujo `CambiarEstadoPersona`). **Falta:** sub-páginas docs/servicios (placeholders) y varios RPC de reportes/descargas (Fase 5). |
+| **3. Dominios core** | Despacho(+trigger), Proyecto(asociar/oficializar), Cuadrilla, EntregaEPP, Mochila SPDC | 🟢 **~75%** | Listados con datos reales + **motor de cumplimiento** (`despachos_listado`, 0019) ✅. **Mutaciones COMPLETAS y verificadas (pgTAP):** Proyecto (0024), Persona (0025), Asociación Persona↔Proyecto — asignar/oficializar/backup/eliminar/reasociar/cambiar-cargo/acreditar/gestión-temprana (0026, pantalla `AsociarPersonas`), Despacho — acciones por trabajador con gating `DESPACHO_*`, toggle in-line por email, cascada 'En Faena', finalizar/eliminar/CRUD (0027, grilla en `DespachoDetail`). **Falta:** **Cuadrilla**, y las mutaciones de EntregaEPP/Mochila (listados ya clonados). |
 | **4. Dominios restantes** | ~30 entidades CRUD | 🟡 **~35%** | Hechos (list/detail, lectura): config (faena, cargo, documento, empresa, empresa-cliente, artículo, tipo-equipo, aviso), evaluación, logística (pasaje/citación/hospedaje), reporte-flash. **Falta:** herramienta/equipo, tarea/actividad, notificación/alerta, incidentes/investigación (RiesgosFatalidad, AnalisisCausa, PlanAccion…), y los **formularios de alta/edición** de casi todo. |
 | **5. Features pesadas** | PDF, Excel im/export, Email(Resend), ZIP, pg_cron | 🔴 **0%** | `0005_cron.sql` existe pero **la lógica de los 2 jobs reales no se identificó ni portó**. PDF/Excel/Email/ZIP no iniciados. Botones "Descargar" son stubs. |
 | **6. BI** | p1–p6 (ALTA) + epp1–3 (GESTA), vistas materializadas, cross-filtering | 🔴 **0%** | Sólo placeholders de ruta (`/dashboard*`). 2238 líneas de `BiResource` sin portar. |
@@ -26,11 +28,11 @@
 ## 2. Inventario actual medido
 
 - **Features (13):** auth, persona, proyecto, despacho, entrega-epp, mochila, epp, evaluacion, logistica, reporte-flash, config (12 archivos = catálogos), notificaciones, NotFoundPage.
-- **Migraciones (17):** `0001_schema` … `0017_perfil_auth_admin_read`.
-- **Funciones DB:** helpers (`auth_empresa`, `has_role`, `es_alta`, `es_gesta`), visibilidad (`persona_visible`, `proyecto_visible`, `tiene_rol_despacho`), negocio (`persona_es_nueva`, `notificaciones_documentos`), trigger (`fn_audita_estado_despacho`, `tg_set_updated_at`), `custom_access_token_hook`.
+- **Migraciones (27):** `0001_schema` … `0027_despacho_mutaciones` (incl. listados con motor de cumplimiento 0018-0023 y mutaciones de negocio 0024-0027).
+- **Funciones DB:** helpers/visibilidad (`auth_empresa`, `has_role`, `es_alta`, `es_gesta`, `persona_visible`, `proyecto_visible`, `tiene_rol_despacho`, `puede_gestionar_accion`, `puede_editar_estados_personal`, `persona_en_despacho`), **mutaciones** de proyecto/persona/asociación/despacho (RPCs SECURITY DEFINER 0024-0027), listados (RPCs 0018-0023), trigger (`fn_audita_estado_despacho`, `tg_set_updated_at`), `custom_access_token_hook`.
 - **Edge Functions:** `sso-consume`, `sso-users` (+ `_shared`). **No** `integracion-*`, **no** `pdf-*`/`email-*`.
-- **UI:** design system `.app-*` portado **verbatim** del `global.scss`/`navbar.component.scss` real + iconos PNG reales. shadcn generado mínimo (button, card, input, sonner).
-- **Tests:** **0** (sin Vitest, sin pgTAP, sin Playwright).
+- **UI:** design system `.app-*` portado **verbatim** + iconos PNG reales. Componentes compartidos: `ConfirmDialog` (clon NgbModal), `RowActionsMenu`. shadcn mínimo.
+- **Tests:** **4 suites pgTAP** (52 aserciones) contra la BD vía Management API (`scripts/run-pgtap.mjs`): `rls_smoke`, `proyecto_mutaciones`, `asociacion_mutaciones`, `despacho_mutaciones`. **Falta:** Vitest (unit) y Playwright (e2e).
 
 ---
 
