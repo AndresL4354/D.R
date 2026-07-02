@@ -45,9 +45,9 @@ export const router = createBrowserRouter(
 
         // --- Despacho (Fase 3) ---
         { path: 'despacho', lazy: () => import('@/features/despacho/DespachoList') },
-        { path: 'despacho/nuevo', element: <div className="p-6">Nuevo despacho (Fase 3)</div> },
+        { path: 'despacho/nuevo', lazy: () => import('@/features/despacho/DespachoForm') },
         { path: 'despacho/:id', lazy: () => import('@/features/despacho/DespachoDetail') },
-        { path: 'despacho/:id/editar', element: <div className="p-6">Editar despacho (Fase 3)</div> },
+        { path: 'despacho/:id/editar', lazy: () => import('@/features/despacho/DespachoForm') },
 
         // --- Entrega EPP (Fase 3) — vista gateada como en el real ---
         { path: 'entrega-epp', lazy: () => import('@/features/entrega-epp/EntregaEppList') },

@@ -14,8 +14,9 @@ import {
   Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useDespachoFiltrosCatalogos, useDespachosFiltrados } from './hooks';
+import { useDespachoFiltrosCatalogos, useDespachosFiltrados, useEliminarDespacho, useFinalizarDespacho } from './hooks';
 import { ESTADOS_DESPACHO, type DespachoListFilters, type DespachoListRow } from './api';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useRole } from '@/features/auth/useRole';
 import { formatDate } from '@/lib/utils';
 
@@ -72,10 +73,24 @@ interface Draft {
 }
 const EMPTY: Draft = { idFaena: '', idProyecto: '', estado: '', fechaInicio: '', fechaFin: '' };
 
-function RowMenu({ id, canFinalizar, canDelete }: { id: number; canFinalizar: boolean; canDelete: boolean }) {
+function RowMenu({
+  row,
+  canFinalizar,
+  canDelete,
+  onFinalizar,
+  onDelete,
+}: {
+  row: DespachoListRow;
+  canFinalizar: boolean;
+  canDelete: boolean;
+  onFinalizar: (r: DespachoListRow) => void;
+  onDelete: (r: DespachoListRow) => void;
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const id = row.id;
+  const finalizado = row.estado === 'FINALIZADO';
   useEffect(() => {
     function onDoc(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -93,8 +108,8 @@ function RowMenu({ id, canFinalizar, canDelete }: { id: number; canFinalizar: bo
           <button className="app-navbar__dropdown-item" onClick={() => { setOpen(false); navigate(`/despacho/${id}`); }}>
             <Eye size={16} /> <span>Ver</span>
           </button>
-          {canFinalizar && (
-            <button className="app-navbar__dropdown-item" onClick={() => { setOpen(false); toast.info('Finalizar despacho: disponible al portar la mutación (Fase 3).'); }}>
+          {canFinalizar && !finalizado && (
+            <button className="app-navbar__dropdown-item" onClick={() => { setOpen(false); onFinalizar(row); }}>
               <CheckCircle size={16} /> <span>Finalizar</span>
             </button>
           )}
@@ -102,7 +117,7 @@ function RowMenu({ id, canFinalizar, canDelete }: { id: number; canFinalizar: bo
             <Pencil size={16} /> <span>Editar</span>
           </button>
           {canDelete && (
-            <button className="app-navbar__dropdown-item" onClick={() => { setOpen(false); toast.info('Eliminar despacho: disponible al portar la mutación (Fase 3).'); }}>
+            <button className="app-navbar__dropdown-item" onClick={() => { setOpen(false); onDelete(row); }}>
               <Trash2 size={16} /> <span>Eliminar</span>
             </button>
           )}
@@ -139,6 +154,28 @@ export function Component() {
 
   const canFinalizar = hasAnyRole(['ROLE_ADMIN', 'DESPACHO_ADMINISTRADOR']);
   const canDelete = hasAnyRole(['ROLE_ADMIN', 'SUPERADMINISTRADOR', 'SUPERADMINISTRADOR BP']);
+
+  const finalizarMut = useFinalizarDespacho();
+  const eliminarMut = useEliminarDespacho();
+  const [aEliminar, setAEliminar] = useState<DespachoListRow | null>(null);
+  const onFinalizar = async (r: DespachoListRow) => {
+    try {
+      await finalizarMut.mutateAsync(r.id);
+      toast.success(`Despacho con id ${r.id} ha sido FINALIZADO correctamente.`);
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
+  const doEliminar = async () => {
+    if (!aEliminar) return;
+    try {
+      await eliminarMut.mutateAsync(aEliminar.id);
+      toast.success('Despacho eliminado.');
+      setAEliminar(null);
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
 
   // KPIs del día (recomputados sobre la página actual, como el real).
   const hoy = new Date();
@@ -384,7 +421,7 @@ export function Component() {
                     </div>
                   </td>
                   <td>
-                    <RowMenu id={d.id} canFinalizar={canFinalizar} canDelete={canDelete} />
+                    <RowMenu row={d} canFinalizar={canFinalizar} canDelete={canDelete} onFinalizar={onFinalizar} onDelete={setAEliminar} />
                   </td>
                 </tr>
               );
@@ -421,6 +458,19 @@ export function Component() {
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={aEliminar != null}
+        title="Eliminar despacho"
+        confirmLabel="Eliminar"
+        busy={eliminarMut.isPending}
+        onCancel={() => setAEliminar(null)}
+        onConfirm={doEliminar}
+      >
+        <p>
+          ¿Confirmas que deseas eliminar el despacho <strong>{aEliminar?.nombre_despacho ?? `#${aEliminar?.id}`}</strong>?
+        </p>
+      </ConfirmDialog>
     </div>
   );
 }
