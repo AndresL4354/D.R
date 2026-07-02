@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Filter, Pencil, Trash2 } from 'lucide-react';
+import { Filter, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CatalogoPage } from './CatalogoPage';
-import { useFaenasListado } from './hooks';
+import { useDeleteCatalogo, useFaenasListado } from './hooks';
+import type { FaenaListRow } from './api';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { RowActionsMenu } from '@/components/common/RowActionsMenu';
 
 /**
@@ -17,6 +19,18 @@ export function Component() {
   const [applied, setApplied] = useState<string | null>(null);
   const { data: faenas, isLoading, isError } = useFaenasListado(applied);
   const rows = faenas ?? [];
+  const del = useDeleteCatalogo('faena');
+  const [aEliminar, setAEliminar] = useState<FaenaListRow | null>(null);
+  const doEliminar = async () => {
+    if (!aEliminar) return;
+    try {
+      await del.mutateAsync(aEliminar.id);
+      toast.success('Faena eliminada.');
+      setAEliminar(null);
+    } catch (e) {
+      toast.error(`No se pudo eliminar: ${(e as Error).message}`);
+    }
+  };
 
   return (
     <CatalogoPage
@@ -66,12 +80,11 @@ export function Component() {
               <td>
                 <RowActionsMenu
                   actions={[
-                    { label: 'Ver', icon: <Eye size={16} />, onClick: () => navigate(`/faena/${f.id}/ver`) },
                     { label: 'Editar', icon: <Pencil size={16} />, onClick: () => navigate(`/faena/${f.id}/editar`) },
                     {
                       label: 'Eliminar',
                       icon: <Trash2 size={16} />,
-                      onClick: () => toast.info('Eliminar faena: disponible al portar la mutación (Fase 4).'),
+                      onClick: () => setAEliminar(f),
                     },
                   ]}
                 />
@@ -80,6 +93,18 @@ export function Component() {
           ))}
         </tbody>
       </table>
+      <ConfirmDialog
+        open={aEliminar != null}
+        title="Eliminar faena"
+        confirmLabel="Eliminar"
+        busy={del.isPending}
+        onCancel={() => setAEliminar(null)}
+        onConfirm={doEliminar}
+      >
+        <p>
+          ¿Confirmas que deseas eliminar la faena <strong>{aEliminar?.nombre}</strong>?
+        </p>
+      </ConfirmDialog>
     </CatalogoPage>
   );
 }

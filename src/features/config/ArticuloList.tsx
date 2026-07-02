@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eraser, Eye, Filter, Pencil, Trash2 } from 'lucide-react';
+import { Eraser, Filter, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CatalogoPage } from './CatalogoPage';
-import { useArticulosFiltro } from './hooks';
+import { useArticulosFiltro, useDeleteCatalogo } from './hooks';
 import { CLASIFICACIONES_ARTICULO, type ArticuloFiltros } from './api';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { RowActionsMenu } from '@/components/common/RowActionsMenu';
 import { useRole } from '@/features/auth/useRole';
 
@@ -27,6 +28,18 @@ export function Component() {
   const [applied, setApplied] = useState<ArticuloFiltros>({});
   const { data: articulos, isLoading, isError } = useArticulosFiltro(applied);
   const rows = articulos ?? [];
+  const del = useDeleteCatalogo('articulo');
+  const [aEliminar, setAEliminar] = useState<{ id: number; descripcion: string | null } | null>(null);
+  const doEliminar = async () => {
+    if (!aEliminar) return;
+    try {
+      await del.mutateAsync(aEliminar.id);
+      toast.success('Artículo eliminado.');
+      setAEliminar(null);
+    } catch (e) {
+      toast.error(`No se pudo eliminar: ${(e as Error).message}`);
+    }
+  };
 
   const validarPermiso = (clasificacion: string | null) =>
     clasificacion === 'SPDC' ? hasRole('ADMIN_VERTICAL') : hasRole('ROLE_ADMIN');
@@ -109,7 +122,6 @@ export function Component() {
                 <td>
                   <RowActionsMenu
                     actions={[
-                      { label: 'Ver', icon: <Eye size={16} />, onClick: () => navigate(`/articulo/${a.id}/ver`) },
                       {
                         label: 'Editar',
                         icon: <Pencil size={16} />,
@@ -120,7 +132,7 @@ export function Component() {
                         label: 'Eliminar',
                         icon: <Trash2 size={16} />,
                         show: permitido,
-                        onClick: () => toast.info('Eliminar artículo: disponible al portar la mutación (Fase 4).'),
+                        onClick: () => setAEliminar({ id: a.id, descripcion: a.descripcion }),
                       },
                     ]}
                   />
@@ -145,6 +157,18 @@ export function Component() {
           })}
         </tbody>
       </table>
+      <ConfirmDialog
+        open={aEliminar != null}
+        title="Eliminar artículo"
+        confirmLabel="Eliminar"
+        busy={del.isPending}
+        onCancel={() => setAEliminar(null)}
+        onConfirm={doEliminar}
+      >
+        <p>
+          ¿Confirmas que deseas eliminar el artículo <strong>{aEliminar?.descripcion}</strong>?
+        </p>
+      </ConfirmDialog>
     </CatalogoPage>
   );
 }

@@ -153,3 +153,44 @@ export async function listAvisos(): Promise<Tables<'aviso_mantenimiento'>[]> {
   if (error) throw error;
   return data ?? [];
 }
+
+// =============================================================================
+// CRUD de catálogos (Fase 4) — escritura por PostgREST, gated por RLS (0028).
+// Primer lote: faena, cargo, articulo, tipo_equipo.
+// =============================================================================
+
+export type CatalogoTabla = 'faena' | 'cargo' | 'articulo' | 'tipo_equipo';
+export type CatalogoRow = Record<string, string | number | boolean | null>;
+
+export async function getCatalogo(tabla: CatalogoTabla, id: number): Promise<CatalogoRow | null> {
+  const { data, error } = await supabase.from(tabla).select('*').eq('id', id).maybeSingle();
+  if (error) throw error;
+  return (data ?? null) as CatalogoRow | null;
+}
+
+export async function createCatalogo(tabla: CatalogoTabla, row: CatalogoRow): Promise<number> {
+  const { data, error } = await supabase.from(tabla).insert(row as never).select('id').single();
+  if (error) throw error;
+  return data.id as number;
+}
+
+export async function updateCatalogo(tabla: CatalogoTabla, id: number, row: CatalogoRow): Promise<void> {
+  const { error } = await supabase.from(tabla).update(row as never).eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteCatalogo(tabla: CatalogoTabla, id: number): Promise<void> {
+  const { error } = await supabase.from(tabla).delete().eq('id', id);
+  if (error) throw error;
+}
+
+/** Razones sociales de empresa_cliente (para el select de "empresa" en Faena). */
+export async function getEmpresaClienteNombres(): Promise<string[]> {
+  const rows = await listEmpresasCliente();
+  const set = new Set<string>();
+  for (const r of rows) {
+    const rs = (r as { razon_social: string | null }).razon_social;
+    if (rs && rs.trim()) set.add(rs.trim());
+  }
+  return [...set].sort((a, b) => a.localeCompare(b));
+}

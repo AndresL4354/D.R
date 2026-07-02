@@ -1,5 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  createCatalogo,
+  deleteCatalogo,
+  getCatalogo,
+  getEmpresaClienteNombres,
   listArticulos,
   listAvisos,
   listCargos,
@@ -8,6 +12,9 @@ import {
   listEmpresasCliente,
   listFaenas,
   listTiposEquipo,
+  updateCatalogo,
+  type CatalogoRow,
+  type CatalogoTabla,
 } from './api';
 
 export const useFaenas = () => useQuery({ queryKey: ['cfg', 'faena'], queryFn: listFaenas });
@@ -49,3 +56,31 @@ export const useArticulosFiltro = (filtros: ArticuloFiltros) =>
     queryKey: ['cfg', 'articulo-filtro', filtros],
     queryFn: () => listArticulosFiltro(filtros),
   });
+
+// ---- CRUD de catálogos (Fase 4) ----
+export const useCatalogo = (tabla: CatalogoTabla, id: number) =>
+  useQuery({
+    queryKey: ['cfg', tabla, 'detail', id],
+    queryFn: () => getCatalogo(tabla, id),
+    enabled: Number.isFinite(id) && id > 0,
+  });
+
+export function useSaveCatalogo(tabla: CatalogoTabla) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, row }: { id: number | null; row: CatalogoRow }) =>
+      id != null ? updateCatalogo(tabla, id, row).then(() => id) : createCatalogo(tabla, row),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['cfg'] }),
+  });
+}
+
+export function useDeleteCatalogo(tabla: CatalogoTabla) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => deleteCatalogo(tabla, id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['cfg'] }),
+  });
+}
+
+export const useEmpresaClienteNombres = () =>
+  useQuery({ queryKey: ['cfg', 'empresa-cliente-nombres'], queryFn: getEmpresaClienteNombres, staleTime: 5 * 60 * 1000 });

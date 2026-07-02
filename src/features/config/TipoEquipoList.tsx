@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CatalogoPage } from './CatalogoPage';
-import { useTiposEquipo } from './hooks';
+import { useDeleteCatalogo, useTiposEquipo } from './hooks';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { RowActionsMenu } from '@/components/common/RowActionsMenu';
 import { useRole } from '@/features/auth/useRole';
 
@@ -16,6 +18,18 @@ export function Component() {
   const { data: tipos, isLoading, isError } = useTiposEquipo();
   const rows = tipos ?? [];
   const canDelete = hasAnyRole(['ROLE_ADMIN', 'SUPERADMINISTRADOR', 'SUPERADMINISTRADOR BP']);
+  const del = useDeleteCatalogo('tipo_equipo');
+  const [aEliminar, setAEliminar] = useState<{ id: number; nombre: string | null } | null>(null);
+  const doEliminar = async () => {
+    if (!aEliminar) return;
+    try {
+      await del.mutateAsync(aEliminar.id);
+      toast.success('Tipo de equipo eliminado.');
+      setAEliminar(null);
+    } catch (e) {
+      toast.error(`No se pudo eliminar: ${(e as Error).message}`);
+    }
+  };
 
   return (
     <CatalogoPage
@@ -46,13 +60,12 @@ export function Component() {
               <td>
                 <RowActionsMenu
                   actions={[
-                    { label: 'Ver', icon: <Eye size={16} />, onClick: () => navigate(`/tipo-equipo/${t.id}/ver`) },
                     { label: 'Editar', icon: <Pencil size={16} />, onClick: () => navigate(`/tipo-equipo/${t.id}/editar`) },
                     {
                       label: 'Eliminar',
                       icon: <Trash2 size={16} />,
                       show: canDelete,
-                      onClick: () => toast.info('Eliminar tipo de equipo: disponible al portar la mutación (Fase 4).'),
+                      onClick: () => setAEliminar({ id: t.id, nombre: t.nombre }),
                     },
                   ]}
                 />
@@ -61,6 +74,18 @@ export function Component() {
           ))}
         </tbody>
       </table>
+      <ConfirmDialog
+        open={aEliminar != null}
+        title="Eliminar tipo de equipo"
+        confirmLabel="Eliminar"
+        busy={del.isPending}
+        onCancel={() => setAEliminar(null)}
+        onConfirm={doEliminar}
+      >
+        <p>
+          ¿Confirmas que deseas eliminar el tipo de equipo <strong>{aEliminar?.nombre}</strong>?
+        </p>
+      </ConfirmDialog>
     </CatalogoPage>
   );
 }

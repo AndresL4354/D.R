@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eraser, Eye, Filter, Pencil, Trash2 } from 'lucide-react';
+import { Eraser, Filter, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CatalogoPage } from './CatalogoPage';
-import { useCargosListado } from './hooks';
+import { useCargosListado, useDeleteCatalogo } from './hooks';
+import type { CargoListRow } from './api';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { RowActionsMenu } from '@/components/common/RowActionsMenu';
 import { useRole } from '@/features/auth/useRole';
 
@@ -20,6 +22,18 @@ export function Component() {
   const { data: cargos, isLoading, isError } = useCargosListado(applied);
   const rows = cargos ?? [];
   const canDelete = hasAnyRole(['ROLE_ADMIN', 'SUPERADMINISTRADOR', 'SUPERADMINISTRADOR BP']);
+  const del = useDeleteCatalogo('cargo');
+  const [aEliminar, setAEliminar] = useState<CargoListRow | null>(null);
+  const doEliminar = async () => {
+    if (!aEliminar) return;
+    try {
+      await del.mutateAsync(aEliminar.id);
+      toast.success('Cargo eliminado.');
+      setAEliminar(null);
+    } catch (e) {
+      toast.error(`No se pudo eliminar: ${(e as Error).message}`);
+    }
+  };
 
   return (
     <CatalogoPage
@@ -72,13 +86,12 @@ export function Component() {
               <td>
                 <RowActionsMenu
                   actions={[
-                    { label: 'Ver', icon: <Eye size={16} />, onClick: () => navigate(`/cargo/${c.id}/ver`) },
                     { label: 'Editar', icon: <Pencil size={16} />, onClick: () => navigate(`/cargo/${c.id}/editar`) },
                     {
                       label: 'Eliminar',
                       icon: <Trash2 size={16} />,
                       show: canDelete,
-                      onClick: () => toast.info('Eliminar cargo: disponible al portar la mutación (Fase 4).'),
+                      onClick: () => setAEliminar(c),
                     },
                   ]}
                 />
@@ -91,6 +104,18 @@ export function Component() {
           ))}
         </tbody>
       </table>
+      <ConfirmDialog
+        open={aEliminar != null}
+        title="Eliminar cargo"
+        confirmLabel="Eliminar"
+        busy={del.isPending}
+        onCancel={() => setAEliminar(null)}
+        onConfirm={doEliminar}
+      >
+        <p>
+          ¿Confirmas que deseas eliminar el cargo <strong>{aEliminar?.nombre}</strong>?
+        </p>
+      </ConfirmDialog>
     </CatalogoPage>
   );
 }
