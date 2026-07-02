@@ -985,3 +985,56 @@
 .app-table tbody tr.app-table-row--warning { background: var(--app-color-warning-soft); }
 .app-table tbody tr.app-table-row--danger { background: var(--app-color-danger-soft); }
 .app-table tbody tr.app-table-row--muted { background: var(--app-color-muted-bg); }
+
+/* =============================================================================
+   Modal — clon del NgbModal de docnomina (delete/confirm dialogs).
+   ============================================================================= */
+.app-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 10vh var(--app-space-4) var(--app-space-4);
+}
+.app-modal {
+  background: var(--app-surface);
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--app-shadow-lg);
+  width: 100%;
+  max-width: 500px;
+}
+.app-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--app-space-4) var(--app-space-5);
+  border-bottom: 1px solid var(--app-border);
+}
+.app-modal__title {
+  margin: 0;
+  font-size: var(--app-fs-lg);
+  font-weight: 600;
+  color: var(--app-text);
+}
+.app-modal__close {
+  border: 0;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--app-text-muted);
+  cursor: pointer;
+  padding: 0 4px;
+}
+.app-modal__close:hover { color: var(--app-text); }
+.app-modal__body { padding: var(--app-space-5); }
+.app-modal__body p { margin: 0; }
+.app-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--app-space-2);
+  padding: var(--app-space-4) var(--app-space-5);
+  border-top: 1px solid var(--app-border);
+}
