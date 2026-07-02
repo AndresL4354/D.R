@@ -13,8 +13,15 @@ import {
   Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useProyectoFaenas, useProyectos } from './hooks';
-import { ESTADOS_PROYECTO, type ProyectoOrderKey } from './api';
+import {
+  useActivarProyecto,
+  useEliminarProyecto,
+  useFinalizarProyecto,
+  useProyectoFaenas,
+  useProyectos,
+} from './hooks';
+import { ESTADOS_PROYECTO, getEvaluacionesPendientes, type Proyecto, type ProyectoOrderKey } from './api';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useRole } from '@/features/auth/useRole';
 import { formatDate } from '@/lib/utils';
 
@@ -47,12 +54,15 @@ interface Filtros {
 const EMPTY: Filtros = { nombre: '', estado: '', faena: '', fechaInicio: '', fechaFin: '' };
 
 /** Menú kebab del servicio (clon del mat-menu real). */
-function RowMenu({ id, estado, canEdit, canFinalizar, canDelete }: {
-  id: number;
-  estado: string | null;
+function RowMenu({ proyecto, canEdit, canFinalizar, canActivar, canDelete, onFinalizar, onActivar, onEliminar }: {
+  proyecto: Proyecto;
   canEdit: boolean;
   canFinalizar: boolean;
+  canActivar: boolean;
   canDelete: boolean;
+  onFinalizar: (p: Proyecto) => void;
+  onActivar: (p: Proyecto) => void;
+  onEliminar: (p: Proyecto) => void;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -64,8 +74,9 @@ function RowMenu({ id, estado, canEdit, canFinalizar, canDelete }: {
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
-  const finalizado = estado === 'FINALIZADO';
-  const activo = estado === 'ACTIVO';
+  const finalizado = proyecto.estado === 'FINALIZADO';
+  const activo = proyecto.estado === 'ACTIVO';
+  const id = proyecto.id;
   return (
     <div className="relative inline-block" ref={ref}>
       <button className="btn-icon btn-icon--primary" title="Acciones" onClick={() => setOpen((o) => !o)}>
@@ -82,17 +93,17 @@ function RowMenu({ id, estado, canEdit, canFinalizar, canDelete }: {
             </button>
           )}
           {canFinalizar && activo && (
-            <button className="app-navbar__dropdown-item" onClick={() => { setOpen(false); toast.info('Finalizar servicio: disponible al portar la mutación (Fase 3).'); }}>
+            <button className="app-navbar__dropdown-item" onClick={() => { setOpen(false); onFinalizar(proyecto); }}>
               <CheckCircle size={16} /> <span>Finalizar</span>
             </button>
           )}
-          {finalizado && (
-            <button className="app-navbar__dropdown-item" onClick={() => { setOpen(false); toast.info('Activar servicio: disponible al portar la mutación (Fase 3).'); }}>
+          {canActivar && finalizado && (
+            <button className="app-navbar__dropdown-item" onClick={() => { setOpen(false); onActivar(proyecto); }}>
               <Play size={16} /> <span>Activar</span>
             </button>
           )}
           {canDelete && !finalizado && (
-            <button className="app-navbar__dropdown-item" onClick={() => { setOpen(false); toast.info('Eliminar servicio: disponible al portar la mutación (Fase 3).'); }}>
+            <button className="app-navbar__dropdown-item" onClick={() => { setOpen(false); onEliminar(proyecto); }}>
               <Trash2 size={16} /> <span>Eliminar</span>
             </button>
           )}
@@ -101,6 +112,14 @@ function RowMenu({ id, estado, canEdit, canFinalizar, canDelete }: {
     </div>
   );
 }
+
+/** Estado del flujo de modales (clon de ProyectoDeleteDialog y sus tipos). */
+type ModalState =
+  | { tipo: 'evals'; proyecto: Proyecto; n: number }
+  | { tipo: 'finalizar'; proyecto: Proyecto }
+  | { tipo: 'activar'; proyecto: Proyecto }
+  | { tipo: 'eliminar'; proyecto: Proyecto }
+  | null;
 
 /** Exportado como `Component` para el `lazy` del router. Clon de proyecto.component.html (list). */
 export function Component() {
@@ -140,7 +159,61 @@ export function Component() {
   ]);
   const canEdit = hasAnyRole(['ROLE_ADMIN', 'ENCARGADO_RRHH', 'VALIDADOR_RRHH', 'OPERACIONES']);
   const canFinalizar = hasAnyRole(['ROLE_ADMIN', 'SUPERADMINISTRADOR', 'SUPERADMINISTRADOR BP', 'OPERACIONES']);
+  const canActivar = hasAnyRole(['ROLE_ADMIN']);
   const canDelete = hasAnyRole(['ROLE_ADMIN', 'SUPERADMINISTRADOR', 'SUPERADMINISTRADOR BP']);
+
+  // ---- Flujo de mutaciones (modales) ----
+  const [modal, setModal] = useState<ModalState>(null);
+  const [busy, setBusy] = useState(false);
+  const finalizarMut = useFinalizarProyecto();
+  const activarMut = useActivarProyecto();
+  const eliminarMut = useEliminarProyecto();
+
+  // Finalizar: primero cuenta evaluaciones pendientes (gate del flujo real)
+  const onFinalizar = async (p: Proyecto) => {
+    try {
+      const n = await getEvaluacionesPendientes(p.id);
+      setModal(n > 0 ? { tipo: 'evals', proyecto: p, n } : { tipo: 'finalizar', proyecto: p });
+    } catch {
+      setModal({ tipo: 'finalizar', proyecto: p });
+    }
+  };
+  const doFinalizar = async (p: Proyecto) => {
+    setBusy(true);
+    try {
+      await finalizarMut.mutateAsync(p.id);
+      toast.success('Servicio finalizado.');
+      setModal(null);
+    } catch (e) {
+      toast.error(`No se pudo finalizar: ${(e as Error).message}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const doActivar = async (p: Proyecto) => {
+    setBusy(true);
+    try {
+      await activarMut.mutateAsync(p.id);
+      toast.success('Servicio activado.');
+      setModal(null);
+    } catch (e) {
+      toast.error(`No se pudo activar: ${(e as Error).message}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const doEliminar = async (p: Proyecto) => {
+    setBusy(true);
+    try {
+      await eliminarMut.mutateAsync(p.id);
+      toast.success('Servicio eliminado.');
+      setModal(null);
+    } catch (e) {
+      toast.error(`No se pudo eliminar: ${(e as Error).message}`);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const filtrar = () => {
     setApplied(draft);
@@ -327,11 +400,14 @@ export function Component() {
                 </td>
                 <td>
                   <RowMenu
-                    id={p.id}
-                    estado={p.estado}
+                    proyecto={p}
                     canEdit={canEdit}
                     canFinalizar={canFinalizar}
+                    canActivar={canActivar}
                     canDelete={canDelete}
+                    onFinalizar={onFinalizar}
+                    onActivar={(pr) => setModal({ tipo: 'activar', proyecto: pr })}
+                    onEliminar={(pr) => setModal({ tipo: 'eliminar', proyecto: pr })}
                   />
                 </td>
               </tr>
@@ -368,6 +444,59 @@ export function Component() {
           </button>
         </div>
       </div>
+
+      {/* Finalizar — paso 1: si hay evaluaciones pendientes (clon del doble modal) */}
+      <ConfirmDialog
+        open={modal?.tipo === 'evals'}
+        title={modal?.tipo === 'evals' ? `Tiene ${modal.n} evaluaciones por realizar` : ''}
+        confirmLabel="Finalizar"
+        confirmIcon={<CheckCircle size={16} />}
+        busy={busy}
+        onCancel={() => setModal(null)}
+        onConfirm={() => modal?.tipo === 'evals' && setModal({ tipo: 'finalizar', proyecto: modal.proyecto })}
+      >
+        <p>¿ Estás seguro de finalizar sin evaluar ?</p>
+      </ConfirmDialog>
+
+      {/* Finalizar — paso 2 (o directo si no había pendientes) */}
+      <ConfirmDialog
+        open={modal?.tipo === 'finalizar'}
+        title="Finalizar servicio"
+        confirmLabel="Finalizar"
+        confirmIcon={<CheckCircle size={16} />}
+        busy={busy}
+        onCancel={() => setModal(null)}
+        onConfirm={() => modal?.tipo === 'finalizar' && doFinalizar(modal.proyecto)}
+      >
+        <p>¿Estás seguro que deseas finalizar el servicio?</p>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={modal?.tipo === 'activar'}
+        title="Activar servicio"
+        confirmLabel="Activar"
+        confirmIcon={<Play size={16} />}
+        danger={false}
+        busy={busy}
+        onCancel={() => setModal(null)}
+        onConfirm={() => modal?.tipo === 'activar' && doActivar(modal.proyecto)}
+      >
+        <p>¿Estás seguro que deseas activar el servicio?</p>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={modal?.tipo === 'eliminar'}
+        title="Borrar servicio"
+        confirmLabel="Eliminar"
+        busy={busy}
+        onCancel={() => setModal(null)}
+        onConfirm={() => modal?.tipo === 'eliminar' && doEliminar(modal.proyecto)}
+      >
+        <p>
+          ¿Estás seguro que deseas eliminar el servicio{' '}
+          {modal?.tipo === 'eliminar' && <strong>{modal.proyecto.nombre}</strong>}?
+        </p>
+      </ConfirmDialog>
     </div>
   );
 }

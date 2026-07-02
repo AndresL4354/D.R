@@ -62,6 +62,154 @@ export interface PersonalRow {
   nuevo: boolean | null;
 }
 
+// =============================================================================
+// Mutaciones (Fase 3) — paridad con ProyectoServiceImpl (ver 0024).
+// =============================================================================
+
+export interface ProyectoInput {
+  nombre: string;
+  descripcion: string | null;
+  faena: string | null;
+  idFaena: number | null;
+  fechaInicio: string | null;
+  fechaFin: string | null;
+}
+
+/** Crear servicio — estado ACTIVO, fecha_sistema=now, empresa del usuario (fiel a save()). */
+export async function createProyecto(input: ProyectoInput, usuario: string, empresa: string) {
+  const { data, error } = await supabase
+    .from('proyecto')
+    .insert({
+      nombre: input.nombre,
+      descripcion: input.descripcion,
+      faena: input.faena,
+      id_faena: input.idFaena,
+      fecha_inicio: input.fechaInicio,
+      fecha_fin: input.fechaFin,
+      estado: 'ACTIVO',
+      fecha_sistema: new Date().toISOString(),
+      usuario_sistema: usuario,
+      razon_social_empresa: empresa,
+    })
+    .select('id')
+    .single();
+  if (error) throw error;
+  return data.id as number;
+}
+
+/** Editar servicio — usuario_sistema se pisa con el editor; empresa se conserva (fiel). */
+export async function updateProyecto(id: number, input: ProyectoInput, usuario: string) {
+  const { error } = await supabase
+    .from('proyecto')
+    .update({
+      nombre: input.nombre,
+      descripcion: input.descripcion,
+      faena: input.faena,
+      id_faena: input.idFaena,
+      fecha_inicio: input.fechaInicio,
+      fecha_fin: input.fechaFin,
+      usuario_sistema: usuario,
+    })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+/** Personas asociadas sin evaluación (gate del flujo Finalizar). */
+export async function getEvaluacionesPendientes(id: number): Promise<number> {
+  const { data, error } = await supabase.rpc('proyecto_evaluaciones_pendientes' as never, {
+    p_id: id,
+  } as never);
+  if (error) throw error;
+  return Number(data ?? 0);
+}
+
+export async function finalizarProyecto(id: number) {
+  const { error } = await supabase.rpc('proyecto_finalizar' as never, { p_id: id } as never);
+  if (error) throw error;
+}
+
+export async function activarProyecto(id: number) {
+  const { error } = await supabase.rpc('proyecto_activar' as never, { p_id: id } as never);
+  if (error) throw error;
+}
+
+export async function eliminarProyecto(id: number) {
+  const { error } = await supabase.rpc('proyecto_eliminar' as never, { p_id: id } as never);
+  if (error) throw error;
+}
+
+// ---- Cargos solicitados (Asociar cargos) ----
+export interface CargoSolicitado {
+  id?: number;
+  idCargo: number;
+  nombreCargo: string;
+  cantidad: number;
+  cantidadNoche: number;
+  turnosEfectivos: number | null;
+}
+
+export async function getCargosProyecto(id: number): Promise<CargoSolicitado[]> {
+  const { data, error } = await supabase.rpc('cargos_proyecto_listar' as never, {
+    p_id: id,
+  } as never);
+  if (error) throw error;
+  return ((data ?? []) as Array<{
+    id: number;
+    id_cargo: number;
+    nombre_cargo: string | null;
+    cantidad: number | null;
+    cantidad_noche: number | null;
+    turnos_efectivos: number | null;
+  }>).map((r) => ({
+    id: r.id,
+    idCargo: r.id_cargo,
+    nombreCargo: r.nombre_cargo ?? '',
+    cantidad: r.cantidad ?? 0,
+    cantidadNoche: r.cantidad_noche ?? 0,
+    turnosEfectivos: r.turnos_efectivos,
+  }));
+}
+
+/** Full-replace, como guardarCargosProyecto. */
+export async function guardarCargosProyecto(id: number, cargos: CargoSolicitado[]) {
+  const { error } = await supabase.rpc('cargos_proyecto_guardar' as never, {
+    p_id: id,
+    p_cargos: cargos.map((c) => ({
+      idCargo: c.idCargo,
+      nombreCargo: c.nombreCargo,
+      cantidad: c.cantidad,
+      cantidadNoche: c.cantidadNoche,
+      turnosEfectivos: c.turnosEfectivos,
+    })),
+  } as never);
+  if (error) throw error;
+}
+
+/** Catálogo de faenas (id + nombre) para el form. */
+export async function getFaenasParaForm(): Promise<{ id: number; nombre: string }[]> {
+  const { data, error } = await supabase.from('faena').select('id, nombre').order('nombre');
+  if (error) throw error;
+  return (data ?? []).map((f) => ({ id: f.id as number, nombre: (f.nombre as string | null) ?? '' }));
+}
+
+/** Cargos disponibles para una faena (cargo ⋈ faenas_cargo) — para el autocomplete de Asociar cargos. */
+export async function getCargosByFaena(idFaena: number): Promise<{ id: number; nombre: string }[]> {
+  const { data, error } = await supabase
+    .from('faenas_cargo')
+    .select('idcargo')
+    .eq('idfaena', idFaena);
+  if (error) throw error;
+  const ids = [...new Set((data ?? []).map((r) => r.idcargo).filter((x): x is number => x != null))];
+  if (!ids.length) return [];
+  const { data: cargos, error: e2 } = await supabase
+    .from('cargo')
+    .select('id, nombre')
+    .in('id', ids)
+    .order('nombre');
+  if (e2) throw e2;
+  return (cargos ?? []).map((c) => ({ id: c.id as number, nombre: (c.nombre as string | null) ?? '' }));
+}
+
 /** Personal asignado al proyecto (persona_proyecto + nombre de persona). */
 export async function getPersonalProyecto(idProyecto: number): Promise<PersonalRow[]> {
   const { data, error } = await supabase
