@@ -1,16 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  cambiarEstadoPersona,
   createPersona,
+  eliminarPersona,
   getCargosCatalogo,
   getFaenasCatalogo,
+  getIdsCargoPersona,
   getPersona,
   getPersonaCargos,
   getPersonaComunas,
   getPersonaEmpresas,
   getTiposDocPersona,
+  guardarBloqueoPersona,
   listPersonas,
   listPersonasFiltradas,
   updatePersona,
+  verificarDocumentos,
   type ListPersonasParams,
   type PersonaListFilters,
 } from './api';
@@ -87,4 +92,40 @@ export function useUpdatePersona() {
     mutationFn: ({ id, input }: { id: number; input: PersonaInput }) => updatePersona(id, input),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['persona'] }),
   });
+}
+
+// ---- Mutaciones de estado / bloqueo / eliminar (Fase 3) ----
+export function useCambiarEstadoPersona() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, estado, usuario }: { id: number; estado: string; usuario: string }) =>
+      cambiarEstadoPersona(id, estado, usuario),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['persona'] }),
+  });
+}
+
+export function useGuardarBloqueoPersona() {
+  return useMutation({
+    mutationFn: (args: {
+      id: number;
+      motivo: string | null;
+      descripcion: string | null;
+      usuario: string;
+      estadoBloqueo: 'BLOQUEADO' | 'DESBLOQUEADO';
+    }) => guardarBloqueoPersona(args.id, args.motivo, args.descripcion, args.usuario, args.estadoBloqueo),
+  });
+}
+
+export function useEliminarPersona() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => eliminarPersona(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['persona'] }),
+  });
+}
+
+/** Verifica documentos + devuelve inválidos (para el flujo de paso a 'Activo'). */
+export async function verificarDocumentosPersona(id: number): Promise<string[]> {
+  const ids = await getIdsCargoPersona(id);
+  return verificarDocumentos(id, ids);
 }

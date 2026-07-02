@@ -16,8 +16,10 @@ import {
   Upload,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { usePersonaFiltrosCatalogos, usePersonasFiltradas } from './hooks';
-import type { PersonaListFilters } from './api';
+import { useEliminarPersona, usePersonaFiltrosCatalogos, usePersonasFiltradas } from './hooks';
+import type { PersonaListFilters, PersonaListRow } from './api';
+import { descargarQrPersona } from './qr';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useRole } from '@/features/auth/useRole';
 
 const PAGE_SIZE = 20;
@@ -43,10 +45,23 @@ interface Draft {
 const EMPTY: Draft = { rut: '', nombre: '', estado: '', comuna: '', idCargo: '', idFaena: '' };
 
 /** Menú kebab de acciones por fila (clon del mat-menu real). */
-function RowActionsMenu({ id, canEdit, canAdmin }: { id: number; canEdit: boolean; canAdmin: boolean }) {
+function RowActionsMenu({
+  row,
+  canEdit,
+  canAdmin,
+  onEliminar,
+  onQr,
+}: {
+  row: PersonaListRow;
+  canEdit: boolean;
+  canAdmin: boolean;
+  onEliminar: (r: PersonaListRow) => void;
+  onQr: (r: PersonaListRow) => void;
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const id = row.id;
   useEffect(() => {
     function onDoc(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -79,24 +94,12 @@ function RowActionsMenu({ id, canEdit, canAdmin }: { id: number; canEdit: boolea
             </button>
           )}
           {canAdmin && (
-            <button
-              className="app-navbar__dropdown-item"
-              onClick={() => {
-                setOpen(false);
-                toast.info('Eliminar persona: disponible al portar la mutación (Fase 2/3).');
-              }}
-            >
+            <button className="app-navbar__dropdown-item" onClick={() => { setOpen(false); onEliminar(row); }}>
               <Trash2 size={16} /> <span>Eliminar</span>
             </button>
           )}
           {canAdmin && (
-            <button
-              className="app-navbar__dropdown-item"
-              onClick={() => {
-                setOpen(false);
-                toast.info('Generar QR: disponible en Fase 5.');
-              }}
-            >
+            <button className="app-navbar__dropdown-item" onClick={() => { setOpen(false); onQr(row); }}>
               <QrCode size={16} /> <span>Generar QR</span>
             </button>
           )}
@@ -128,6 +131,27 @@ export function Component() {
   const canDescargar = hasAnyRole(['ROLE_ADMIN', 'OPERACIONES', 'ENCARGADO_RRHH', 'VALIDADOR_RRHH']);
   const canEdit = hasAnyRole(['ROLE_ADMIN', 'VALIDADOR_RRHH', 'ENCARGADO_RRHH']);
   const canAdmin = hasAnyRole(['ROLE_ADMIN', 'SUPERADMINISTRADOR', 'SUPERADMINISTRADOR BP']);
+
+  // ---- Eliminar + QR ----
+  const [aEliminar, setAEliminar] = useState<PersonaListRow | null>(null);
+  const eliminarMut = useEliminarPersona();
+  const doEliminar = async () => {
+    if (!aEliminar) return;
+    try {
+      await eliminarMut.mutateAsync(aEliminar.id);
+      toast.success('Persona eliminada.');
+      setAEliminar(null);
+    } catch (e) {
+      toast.error(`No se pudo eliminar: ${(e as Error).message}`);
+    }
+  };
+  const generarQr = async (r: PersonaListRow) => {
+    try {
+      await descargarQrPersona({ id: r.id, numero_id: r.num_id, nombre_completo: r.nombre_completo });
+    } catch {
+      toast.warning('Se presento un error al descargar el QR');
+    }
+  };
 
   const apply = () => {
     setApplied({
@@ -339,7 +363,13 @@ export function Component() {
                 <td>{p.servicio}</td>
                 <td>{p.estado_persona}</td>
                 <td>
-                  <RowActionsMenu id={p.id} canEdit={canEdit} canAdmin={canAdmin} />
+                  <RowActionsMenu
+                    row={p}
+                    canEdit={canEdit}
+                    canAdmin={canAdmin}
+                    onEliminar={setAEliminar}
+                    onQr={generarQr}
+                  />
                 </td>
               </tr>
             ))}
@@ -375,6 +405,19 @@ export function Component() {
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={aEliminar != null}
+        title="Eliminar persona"
+        confirmLabel="Eliminar"
+        busy={eliminarMut.isPending}
+        onCancel={() => setAEliminar(null)}
+        onConfirm={doEliminar}
+      >
+        <p>
+          ¿Confirmas que deseas eliminar la persona <strong>{aEliminar?.nombre_completo}</strong>?
+        </p>
+      </ConfirmDialog>
     </div>
   );
 }

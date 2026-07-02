@@ -90,6 +90,86 @@ export async function getPersona(id: number): Promise<Persona | null> {
   return data;
 }
 
+// =============================================================================
+// Mutaciones (Fase 3) — paridad con PersonaServiceImpl (ver 0025).
+// =============================================================================
+
+/** Estados del selector "Cambiar estado" (EstadoPersonaEnum del front). */
+export const ESTADOS_PERSONA = [
+  'Reclutamiento',
+  'Exámenes',
+  'Capacitaciones',
+  'En Revisión',
+  'Acreditación',
+  'Activo',
+  'Inactivo',
+  'Desvinculado',
+  'Observación',
+  'Licencia Médica',
+  'Renuncia',
+] as const;
+
+/** Áreas de observación del diálogo de bloqueo (hardcode del componente real). */
+export const AREAS_OBSERVACION = [
+  'OPERACIONES',
+  'SSO',
+  'RRHH',
+  'FINANZAS',
+  'ABASTECIMIENTO',
+  'LOGISTICA',
+  'GERENCIA',
+];
+
+/** Cambia estado_persona (con historico + cascada persona_proyecto/despachos si != Activo). */
+export async function cambiarEstadoPersona(id: number, estado: string, usuario: string) {
+  const { error } = await supabase.rpc('persona_cambiar_estado' as never, {
+    p_id: id,
+    p_estado: estado,
+    p_usuario: usuario,
+  } as never);
+  if (error) throw error;
+}
+
+/** Registra bloqueo/desbloqueo (append-only en bloqueo_persona). */
+export async function guardarBloqueoPersona(
+  id: number,
+  motivo: string | null,
+  descripcion: string | null,
+  usuario: string,
+  estadoBloqueo: 'BLOQUEADO' | 'DESBLOQUEADO',
+) {
+  const { error } = await supabase.rpc('persona_guardar_bloqueo' as never, {
+    p_id: id,
+    p_motivo: motivo,
+    p_descripcion: descripcion,
+    p_usuario: usuario,
+    p_estado_bloqueo: estadoBloqueo,
+  } as never);
+  if (error) throw error;
+}
+
+/** Documentos inválidos (requeridos no cargados + vencidos) — gate del paso a 'Activo'. */
+export async function verificarDocumentos(id: number, idsCargo: number[]): Promise<string[]> {
+  const { data, error } = await supabase.rpc('persona_verificar_documentos' as never, {
+    p_id: id,
+    p_ids_cargo: idsCargo,
+  } as never);
+  if (error) throw error;
+  return ((data ?? []) as Array<{ documento: string }>).map((r) => r.documento).filter(Boolean);
+}
+
+export async function eliminarPersona(id: number) {
+  const { error } = await supabase.rpc('persona_eliminar' as never, { p_id: id } as never);
+  if (error) throw error;
+}
+
+/** ids de cargo de la persona (persona_cargo) — para verificar-documentos. */
+export async function getIdsCargoPersona(id: number): Promise<number[]> {
+  const { data, error } = await supabase.from('persona_cargo').select('cargo').eq('persona', id);
+  if (error) throw error;
+  return [...new Set((data ?? []).map((r) => r.cargo).filter((x): x is number => x != null))];
+}
+
 /** Convierte '' -> null para no persistir cadenas vacías. */
 function toRow(input: PersonaInput): Record<string, string | null> {
   const out: Record<string, string | null> = {};

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePersona, usePersonaExtras } from './hooks';
+import { CambiarEstadoPersona } from './CambiarEstadoPersona';
 import { formatRut, formatDate } from '@/lib/utils';
 
 /** Exportado como `Component` para el `lazy` del router. Clon de persona-detail.component.html. */
@@ -132,6 +133,9 @@ export function Component() {
           <Pencil size={16} /> Editar
         </Link>
       </div>
+
+      {/* Cambiar estado (bloqueo/desbloqueo/acreditación/verificar documentos) */}
+      <CambiarEstadoPersona persona={p} />
 
       {/* Descargar por tipo de documento */}
       <div className="app-card">
