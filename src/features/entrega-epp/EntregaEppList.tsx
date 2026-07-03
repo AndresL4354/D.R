@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
+  Download,
   Eraser,
   Eye,
   Filter,
@@ -13,7 +14,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEntregaFiltrosCatalogos, useEntregasFiltradas } from './hooks';
-import { BODEGAS_ENTREGA, type EntregaListFilters } from './api';
+import { BODEGAS_ENTREGA, listEntregasFiltradas, type EntregaListFilters, type EntregaListRow } from './api';
+import { downloadCsv } from '@/lib/export';
 import { useRole } from '@/features/auth/useRole';
 import { formatMediumDatetime } from '@/lib/utils';
 
@@ -92,6 +94,31 @@ export function Component() {
   const { data, isLoading, isError, refetch, isFetching } = useEntregasFiltradas(applied, page, PAGE_SIZE);
   const { data: cat } = useEntregaFiltrosCatalogos();
 
+  const [exportando, setExportando] = useState(false);
+  const onDescargar = async () => {
+    setExportando(true);
+    try {
+      const { rows: all } = await listEntregasFiltradas(applied, 0, 100000);
+      downloadCsv<EntregaListRow>(
+        'entregas-epp',
+        [
+          { header: 'ID', value: (r) => r.id },
+          { header: 'Fecha', value: (r) => (r.fecha_creacion ?? '').slice(0, 19).replace('T', ' ') },
+          { header: 'Trabajador', value: (r) => r.trabajador },
+          { header: 'Faena', value: (r) => r.faena },
+          { header: 'Servicio', value: (r) => r.servicio },
+          { header: 'Entregado por', value: (r) => r.usuario_entrega },
+        ],
+        all,
+      );
+      toast.success(`${all.length} entregas exportadas.`);
+    } catch (e) {
+      toast.error(`No se pudo exportar: ${(e as Error).message}`);
+    } finally {
+      setExportando(false);
+    }
+  };
+
   const rows = data?.rows ?? [];
   const total = data?.total ?? 0;
   const lastPage = Math.max(0, Math.ceil(total / PAGE_SIZE) - 1);
@@ -147,6 +174,9 @@ export function Component() {
         <div className="app-page-header__actions">
           <button type="button" className="btn btn-secondary" onClick={() => refetch()} disabled={isFetching}>
             <RefreshCw size={16} /> Refrescar
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={onDescargar} disabled={exportando}>
+            <Download size={16} /> {exportando ? 'Exportando…' : 'Descargar'}
           </button>
           <Link to="/entrega-epp/nueva" className="btn btn-primary">
             <Plus size={16} /> Nueva entrega

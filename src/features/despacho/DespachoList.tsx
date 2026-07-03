@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   CheckCircle,
+  Download,
   Eraser,
   Eye,
   Filter,
@@ -15,8 +16,9 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDespachoFiltrosCatalogos, useDespachosFiltrados, useEliminarDespacho, useFinalizarDespacho } from './hooks';
-import { ESTADOS_DESPACHO, type DespachoListFilters, type DespachoListRow } from './api';
+import { ESTADOS_DESPACHO, listDespachosFiltrados, type DespachoListFilters, type DespachoListRow } from './api';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { downloadCsv } from '@/lib/export';
 import { useRole } from '@/features/auth/useRole';
 import { formatDate } from '@/lib/utils';
 
@@ -177,6 +179,40 @@ export function Component() {
     }
   };
 
+  // Exporta TODOS los despachos del filtro actual (con cumplimiento) a CSV/Excel.
+  const [exportando, setExportando] = useState(false);
+  const onDescargar = async () => {
+    setExportando(true);
+    try {
+      const { rows: all } = await listDespachosFiltrados(applied, 0, 100000);
+      downloadCsv<DespachoListRow>(
+        'despachos',
+        [
+          { header: 'Servicio', value: (r) => r.proyecto_nombre },
+          { header: 'Faena', value: (r) => r.faena },
+          { header: 'Despacho', value: (r) => r.nombre_despacho },
+          { header: 'Fecha', value: (r) => (r.fecha_despacho ?? '').slice(0, 10) },
+          { header: 'Estado', value: (r) => r.estado },
+          { header: 'Total personas', value: (r) => r.total_personas },
+          { header: 'Acreditados', value: (r) => r.acreditados },
+          { header: 'Asistencia', value: (r) => r.asistencia },
+          { header: 'SSO', value: (r) => r.sso },
+          { header: 'Bodega', value: (r) => r.bodega },
+          { header: 'Cursos', value: (r) => r.cursos },
+          { header: 'Transporte', value: (r) => r.transporte },
+          { header: 'Despachados', value: (r) => r.despachados },
+          { header: 'Cumplimiento %', value: (r) => r.cumplimiento },
+        ],
+        all,
+      );
+      toast.success(`${all.length} despachos exportados.`);
+    } catch (e) {
+      toast.error(`No se pudo exportar: ${(e as Error).message}`);
+    } finally {
+      setExportando(false);
+    }
+  };
+
   // KPIs del día (recomputados sobre la página actual, como el real).
   const hoy = new Date();
   const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
@@ -237,6 +273,9 @@ export function Component() {
         <div className="app-page-header__actions">
           <button type="button" className="btn btn-secondary" onClick={() => refetch()} disabled={isFetching}>
             <RefreshCw size={16} /> Refrescar
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={onDescargar} disabled={exportando}>
+            <Download size={16} /> {exportando ? 'Exportando…' : 'Descargar'}
           </button>
           <Link to="/despacho/nuevo" className="btn btn-primary">
             <Plus size={16} /> Nuevo despacho

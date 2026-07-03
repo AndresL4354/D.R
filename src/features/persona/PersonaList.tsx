@@ -17,9 +17,10 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEliminarPersona, usePersonaFiltrosCatalogos, usePersonasFiltradas } from './hooks';
-import type { PersonaListFilters, PersonaListRow } from './api';
+import { listPersonasFiltradas, type PersonaListFilters, type PersonaListRow } from './api';
 import { descargarQrPersona } from './qr';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { downloadCsv } from '@/lib/export';
 import { useRole } from '@/features/auth/useRole';
 
 const PAGE_SIZE = 20;
@@ -150,6 +151,33 @@ export function Component() {
       await descargarQrPersona({ id: r.id, numero_id: r.num_id, nombre_completo: r.nombre_completo });
     } catch {
       toast.warning('Se presento un error al descargar el QR');
+    }
+  };
+
+  // Exporta TODAS las personas del filtro actual (no solo la página) a CSV/Excel.
+  const [exportando, setExportando] = useState(false);
+  const onDescargar = async () => {
+    setExportando(true);
+    try {
+      const { rows: all } = await listPersonasFiltradas(applied, 0, 100000);
+      downloadCsv<PersonaListRow>(
+        'personas',
+        [
+          { header: 'Número identificación', value: (r) => r.num_id },
+          { header: 'Nombre completo', value: (r) => r.nombre_completo },
+          { header: 'Cargos', value: (r) => r.cargos },
+          { header: 'Ciudad', value: (r) => r.comuna },
+          { header: 'Teléfono', value: (r) => r.telefono },
+          { header: 'Servicio', value: (r) => r.servicio },
+          { header: 'Estado', value: (r) => r.estado_persona },
+        ],
+        all,
+      );
+      toast.success(`${all.length} personas exportadas.`);
+    } catch (e) {
+      toast.error(`No se pudo exportar: ${(e as Error).message}`);
+    } finally {
+      setExportando(false);
     }
   };
 
@@ -293,12 +321,8 @@ export function Component() {
               <Filter size={16} /> Filtrar
             </button>
             {canDescargar && (
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => toast.info('Exportar a Excel: disponible en Fase 5.')}
-              >
-                <Download size={16} /> Descargar
+              <button type="button" className="btn btn-secondary" onClick={onDescargar} disabled={exportando}>
+                <Download size={16} /> {exportando ? 'Exportando…' : 'Descargar'}
               </button>
             )}
           </div>
