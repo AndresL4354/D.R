@@ -14,11 +14,14 @@ import {
   UserPlus,
   Users,
 } from 'lucide-react';
+import { ClipboardList, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { RowActionsMenu, type RowAction } from '@/components/common/RowActionsMenu';
 import { useAuth } from '@/features/auth/useAuth';
 import { useRole } from '@/features/auth/useRole';
+import { EncuestaDialog } from '@/features/evaluacion/EncuestaDialog';
+import { TIPOS_EVALUACION } from '@/features/evaluacion/api';
 import { personaEnDespacho, type PersonalRow } from './api';
 import {
   useAcreditarTrabajador,
@@ -48,7 +51,7 @@ type Modal =
 export function Component() {
   const { id } = useParams();
   const proyectoId = Number(id);
-  const { hasAnyRole } = useRole();
+  const { hasAnyRole, empresaMatches } = useRole();
   const { user } = useAuth();
   const login = user?.email ?? '';
 
@@ -75,8 +78,11 @@ export function Component() {
   const [modal, setModal] = useState<Modal>(null);
   const [motivo, setMotivo] = useState('');
   const [cargoEditar, setCargoEditar] = useState('');
+  const [encuesta, setEncuesta] = useState<{ row: PersonalRow; tipo: string } | null>(null);
 
   const notFinalizado = p?.estado !== 'FINALIZADO';
+  const canEncuestar = hasAnyRole(['ROLE_ADMIN', 'SUPERADMINISTRADOR', 'SUPERADMINISTRADOR BP', 'OPERACIONES']);
+  const esAlta = empresaMatches('ALTA');
   const canAsignar = hasAnyRole(['ROLE_ADMIN', 'VALIDADOR_RRHH', 'ENCARGADO_RRHH', 'OPERACIONES', 'RRHH']);
   const canOficializar = hasAnyRole(['ROLE_ADMIN', 'SUPERADMINISTRADOR', 'SUPERADMINISTRADOR BP', 'OPERACIONES', 'ENCARGADO_RRHH']);
   const canGestionar = hasAnyRole(['ROLE_ADMIN', 'SUPERADMINISTRADOR', 'SUPERADMINISTRADOR BP', 'ENCARGADO_RRHH']);
@@ -316,17 +322,28 @@ export function Component() {
     </div>
   );
 
+  // Encuestas (evaluación) por trabajador: NORMAL siempre; verticales solo empresa ALTA.
+  const accionesEncuesta = (r: PersonalRow): RowAction[] =>
+    TIPOS_EVALUACION.map((t) => ({
+      label: `Encuesta: ${t.label}`,
+      icon: <ClipboardList size={16} />,
+      show: canEncuestar && notFinalizado && (t.tipo === 'NORMAL' || esAlta),
+      onClick: () => setEncuesta({ row: r, tipo: t.tipo }),
+    }));
+
   const accionesNomina = (r: PersonalRow): RowAction[] => [
     { label: 'Editar', icon: <Pencil size={16} />, show: canGestionar && notFinalizado, onClick: () => abrirCargo(r) },
     { label: 'Acreditación', icon: <IdCard size={16} />, show: canAcreditar && notFinalizado, onClick: () => setModal({ kind: 'acreditar', row: r }) },
     { label: 'BackUp', icon: <Users size={16} />, show: canGestionar && notFinalizado, onClick: () => abrirBackup(r) },
     { label: 'Eliminar', icon: <Trash2 size={16} />, show: canGestionar && notFinalizado, onClick: () => abrirEliminar(r) },
+    ...accionesEncuesta(r),
   ];
   const accionesBackup = (r: PersonalRow): RowAction[] => [
     { label: 'Asociar', icon: <LinkIcon size={16} />, show: canGestionar && notFinalizado, onClick: () => abrirReasociar(r) },
     { label: 'Editar', icon: <Pencil size={16} />, show: canGestionar && notFinalizado, onClick: () => abrirCargo(r) },
     { label: 'Acreditación', icon: <IdCard size={16} />, show: canAcreditar && notFinalizado, onClick: () => setModal({ kind: 'acreditar', row: r }) },
     { label: 'Eliminar', icon: <Trash2 size={16} />, show: canGestionar && notFinalizado, onClick: () => abrirEliminar(r) },
+    ...accionesEncuesta(r),
   ];
   const accionesEliminado = (r: PersonalRow): RowAction[] => [
     { label: 'Asociar', icon: <LinkIcon size={16} />, show: canGestionar, onClick: () => abrirReasociar(r) },
@@ -358,11 +375,25 @@ export function Component() {
           </div>
         </div>
         <div className="app-page-header__actions">
+          <Link to={`/proyecto/${p.id}/evaluaciones`} className="btn btn-secondary">
+            <FileText size={16} /> Ver evaluaciones
+          </Link>
           <Link to={`/proyecto/${p.id}`} className="btn btn-secondary">
             <ArrowLeft size={16} /> Volver
           </Link>
         </div>
       </div>
+
+      {/* Encuesta (crear/editar evaluación de un trabajador) */}
+      {encuesta && (
+        <EncuestaDialog
+          open
+          tipo={encuesta.tipo}
+          persona={{ id: encuesta.row.idPersona, nombre: encuesta.row.persona }}
+          proyecto={{ id: proyectoId, nombre: p.nombre }}
+          onClose={() => setEncuesta(null)}
+        />
+      )}
 
       {/* Asignar persona */}
       {canAsignar && notFinalizado && (

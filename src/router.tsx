@@ -32,7 +32,7 @@ export const router = createBrowserRouter(
         { path: 'persona/:id/editar', lazy: () => import('@/features/persona/PersonaForm') },
         // Sub-páginas de la ficha (placeholders — documentos_persona ya es legible vía RLS)
         { path: 'persona/:id/documentos', element: <div className="p-6">Documentos de la persona (en construcción)</div> },
-        { path: 'persona/:id/evaluaciones', element: <div className="p-6">Evaluaciones de la persona (en construcción)</div> },
+        { path: 'persona/:id/evaluaciones', lazy: () => import('@/features/evaluacion/PersonaEvaluaciones') },
         { path: 'persona/:id/servicios', element: <div className="p-6">Servicios de la persona (en construcción)</div> },
 
         // --- Servicios / Proyecto (Fase 3) ---
@@ -42,6 +42,7 @@ export const router = createBrowserRouter(
         { path: 'proyecto/:id/editar', lazy: () => import('@/features/proyecto/ProyectoForm') },
         { path: 'proyecto/:id/cargos', lazy: () => import('@/features/proyecto/CargosProyecto') },
         { path: 'proyecto/:id/asociar', lazy: () => import('@/features/proyecto/AsociarPersonas') },
+        { path: 'proyecto/:id/evaluaciones', lazy: () => import('@/features/evaluacion/ProyectoEvaluaciones') },
 
         // --- Despacho (Fase 3) ---
         { path: 'despacho', lazy: () => import('@/features/despacho/DespachoList') },
