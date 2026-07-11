@@ -1038,3 +1038,116 @@
   padding: var(--app-space-4) var(--app-space-5);
   border-top: 1px solid var(--app-border);
 }
+
+/* ============================================================
+   Sub-páginas de Persona (Documentos / Servicios) — bloques
+   portados VERBATIM de global.scss del docnomina real.
+   ============================================================ */
+
+/* Semáforo de vigencia (global.scss 470-502): icono PNG 23x25 con
+   position:absolute sobre el <td> de la columna Vigencia — NO es un
+   fondo de celda; replica el visual real (el td sale del flujo). */
+.clase-verde {
+  width: 23px;
+  height: 25px;
+  margin-top: 1%;
+  margin-left: 2%;
+  background-repeat: no-repeat;
+  background-size: cover !important;
+  position: absolute;
+  background: url('/images/verde.png');
+  color: #ffffff !important;
+}
+.clase-amarillo {
+  width: 23px;
+  height: 25px;
+  margin-top: 1%;
+  margin-left: 2%;
+  background-repeat: no-repeat;
+  background-size: cover !important;
+  position: absolute;
+  background: url('/images/amarillo.png');
+  color: #ffffff !important;
+}
+.clase-rojo {
+  width: 23px;
+  height: 25px;
+  margin-top: 1%;
+  margin-left: 2%;
+  background-repeat: no-repeat;
+  background-size: cover !important;
+  position: absolute;
+  background: url('/images/rojo.png');
+  color: #ffffff !important;
+}
+
+/* ===== Info strip (KPIs de la sub-página Servicios) ===== */
+.app-info-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--app-space-4);
+  margin-bottom: var(--app-space-6);
+}
+.app-info-strip__item {
+  background: var(--app-bg-soft);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  padding: var(--app-space-4) var(--app-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-space-2);
+  min-width: 0;
+  transition: box-shadow var(--app-transition);
+}
+.app-info-strip__item:hover { box-shadow: var(--app-shadow-sm); }
+.app-info-strip__label {
+  font-size: var(--app-fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--app-text-muted);
+  font-weight: 600;
+}
+.app-info-strip__value {
+  font-size: var(--app-fs-2xl);
+  font-weight: 700;
+  color: var(--app-text);
+  word-break: break-word;
+  line-height: 1.1;
+}
+.app-info-strip__value--brand { color: var(--app-color-brand); }
+.app-info-strip__value--lg { font-size: var(--app-fs-lg); }
+.app-info-strip__hint {
+  font-size: var(--app-fs-sm);
+  color: var(--app-text-muted);
+}
+
+/* ===== Check ✓/✕ (columna Acred.) ===== */
+.app-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--app-radius-sm);
+  font-size: 14px;
+  font-weight: 700;
+  border: 1px solid var(--app-border-strong);
+  background: var(--app-surface);
+  color: var(--app-text-faint);
+}
+.app-check--ok {
+  background: var(--app-color-success);
+  color: #fff;
+  border-color: var(--app-color-success);
+}
+.app-check--no {
+  background: var(--app-surface);
+  color: var(--app-text-faint);
+  border-color: var(--app-border);
+}
+
+/* ===== Fila activa (servicio actual) ===== */
+.app-table tbody tr.app-table-row--active { background: var(--app-color-brand-tint); }
+.app-table tbody tr.app-table-row--active td:first-child {
+  box-shadow: inset 3px 0 0 0 var(--app-color-brand);
+}

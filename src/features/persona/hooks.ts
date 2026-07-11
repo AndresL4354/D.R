@@ -4,18 +4,22 @@ import {
   createPersona,
   eliminarPersona,
   getCargosCatalogo,
+  getDocumentosPersona,
+  getDocumentosRequeridos,
   getFaenasCatalogo,
   getIdsCargoPersona,
   getPersona,
   getPersonaCargos,
   getPersonaComunas,
   getPersonaEmpresas,
+  getServiciosPersona,
   getTiposDocPersona,
   guardarBloqueoPersona,
   listPersonas,
   listPersonasFiltradas,
   updatePersona,
   verificarDocumentos,
+  type CategoriaDocumento,
   type ListPersonasParams,
   type PersonaListFilters,
 } from './api';
@@ -128,4 +132,69 @@ export function useEliminarPersona() {
 export async function verificarDocumentosPersona(id: number): Promise<string[]> {
   const ids = await getIdsCargoPersona(id);
   return verificarDocumentos(id, ids);
+}
+
+// ---- Sub-páginas de la ficha: Servicios / Documentos (0031) ----
+
+/** Historial de servicios del trabajador (RPC persona_servicios). */
+export function useServiciosPersona(id: number) {
+  return useQuery({
+    queryKey: ['persona', 'servicios', id],
+    queryFn: () => getServiciosPersona(id),
+    enabled: Number.isFinite(id) && id > 0,
+    // La página muestra el mensaje literal del original en cada fallo.
+    meta: { suppressGlobalError: true },
+  });
+}
+
+/** ids de cargo de la persona (consultarPersonaCargo del real). */
+export function useIdsCargoPersona(id: number) {
+  return useQuery({
+    queryKey: ['persona', 'ids-cargo', id],
+    queryFn: () => getIdsCargoPersona(id),
+    enabled: Number.isFinite(id) && id > 0,
+  });
+}
+
+/**
+ * Docs subidos + catálogo requerido de UNA categoría (las dos consultas que el
+ * original hace por card). El merge con placeholders y el semáforo se hacen en
+ * la página (son estado mutable in-place, fiel al componente Angular).
+ */
+export function useDocumentosCategoria(
+  personaId: number,
+  categoria: CategoriaDocumento,
+  soloPublicos: boolean,
+  idsCargo: number[] | undefined,
+) {
+  return useQuery({
+    queryKey: ['persona', 'documentos', personaId, categoria, soloPublicos, idsCargo],
+    enabled: Number.isFinite(personaId) && personaId > 0 && idsCargo != null,
+    // El original re-consulta TODO en cada entrada a la página (ngOnInit);
+    // sin esto, un doc eliminado/editado "resucitaría" del cache al volver.
+    staleTime: 0,
+    refetchOnMount: 'always',
+    queryFn: async () => {
+      const [docsRes, reqRes] = await Promise.allSettled([
+        getDocumentosPersona(personaId, categoria, soloPublicos),
+        // El original dedupea el catálogo por nombre tras la respuesta.
+        getDocumentosRequeridos(categoria, idsCargo ?? [], soloPublicos).then((rs) => {
+          const vistos = new Set<string>();
+          return rs.filter((r) => {
+            const n = r.nombre ?? '';
+            if (vistos.has(n)) return false;
+            vistos.add(n);
+            return true;
+          });
+        }),
+      ]);
+      // Fiel al original: si falla el catálogo la card desaparece; si fallan
+      // solo los docs de la persona, la card muestra los placeholders.
+      if (reqRes.status === 'rejected') throw reqRes.reason;
+      return {
+        docs: docsRes.status === 'fulfilled' ? docsRes.value : [],
+        requeridos: reqRes.value,
+      };
+    },
+  });
 }

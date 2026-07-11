@@ -17,7 +17,12 @@ export function getErrorMessage(error: unknown): string {
  */
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
-    onError: (error) => toast.error(getErrorMessage(error)),
+    // meta.suppressGlobalError: la vista muestra su propio mensaje (p.ej. el
+    // texto literal del original) y no queremos el toast genérico duplicado.
+    onError: (error, query) => {
+      if (query.meta?.suppressGlobalError) return;
+      toast.error(getErrorMessage(error));
+    },
   }),
   mutationCache: new MutationCache({
     onError: (error) => toast.error(getErrorMessage(error)),

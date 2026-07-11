@@ -30,10 +30,10 @@ export const router = createBrowserRouter(
         { path: 'upload-personas', element: <div className="p-6">Carga masiva de personas (Fase 5)</div> },
         { path: 'persona/:id', lazy: () => import('@/features/persona/PersonaDetail') },
         { path: 'persona/:id/editar', lazy: () => import('@/features/persona/PersonaForm') },
-        // Sub-páginas de la ficha (placeholders — documentos_persona ya es legible vía RLS)
-        { path: 'persona/:id/documentos', element: <div className="p-6">Documentos de la persona (en construcción)</div> },
+        // Sub-páginas de la ficha
+        { path: 'persona/:id/documentos', lazy: () => import('@/features/persona/PersonaDocumentos') },
         { path: 'persona/:id/evaluaciones', lazy: () => import('@/features/evaluacion/PersonaEvaluaciones') },
-        { path: 'persona/:id/servicios', element: <div className="p-6">Servicios de la persona (en construcción)</div> },
+        { path: 'persona/:id/servicios', lazy: () => import('@/features/persona/PersonaServicios') },
 
         // --- Servicios / Proyecto (Fase 3) ---
         { path: 'proyecto', lazy: () => import('@/features/proyecto/ProyectoList') },

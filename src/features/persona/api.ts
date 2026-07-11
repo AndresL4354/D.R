@@ -163,11 +163,14 @@ export async function eliminarPersona(id: number) {
   if (error) throw error;
 }
 
-/** ids de cargo de la persona (persona_cargo) — para verificar-documentos. */
+/** ids de cargo de la persona (persona_cargo) — para verificar-documentos y
+ *  las consultas de requeridos. Ordenados para que la queryKey sea estable. */
 export async function getIdsCargoPersona(id: number): Promise<number[]> {
   const { data, error } = await supabase.from('persona_cargo').select('cargo').eq('persona', id);
   if (error) throw error;
-  return [...new Set((data ?? []).map((r) => r.cargo).filter((x): x is number => x != null))];
+  return [...new Set((data ?? []).map((r) => r.cargo).filter((x): x is number => x != null))].sort(
+    (a, b) => a - b,
+  );
 }
 
 /** Convierte '' -> null para no persistir cadenas vacías. */
@@ -238,6 +241,118 @@ export async function getTiposDocPersona(id: number): Promise<string[]> {
     if (t && t.trim()) set.add(t.trim());
   }
   return [...set].sort((a, b) => a.localeCompare(b));
+}
+
+// =============================================================================
+// Sub-páginas de la ficha: Servicios (historial) y Documentos (RPCs 0031).
+// =============================================================================
+
+/** Fila del historial de servicios (ServicioHistoricoDTO del real). */
+export interface ServicioHistoricoRow {
+  id_proyecto: number;
+  nombre_servicio: string | null;
+  faena: string | null;
+  nombre_cargo: string | null;
+  estado: string | null;
+  fecha_creacion: string | null;
+  acreditado: boolean | null;
+  nuevo: boolean | null;
+  /** true solo en la última asociación creada (ORDER BY pp.id DESC → primera). */
+  actual: boolean;
+}
+
+/** GET /api/personas/{id}/servicios — excluye ELIMINADO, incluye BACKUP/NULL. */
+export async function getServiciosPersona(id: number): Promise<ServicioHistoricoRow[]> {
+  const { data, error } = await supabase.rpc('persona_servicios' as never, { p_id: id } as never);
+  if (error) throw error;
+  return (data ?? []) as ServicioHistoricoRow[];
+}
+
+/** Categorías EXACTAS del original — 'Documentos de acreditacion' va SIN tilde en la consulta. */
+export const CATEGORIAS_DOCUMENTO = [
+  'Documentos generales',
+  'Cursos',
+  'Documentos de acreditacion',
+  'Documentos legales',
+] as const;
+export type CategoriaDocumento = (typeof CATEGORIAS_DOCUMENTO)[number];
+
+export interface DocumentoPersonaRow {
+  id: number;
+  nombre_documento: string | null;
+  vencido: boolean | null;
+  fecha_vencimiento: string | null;
+  tipo_documento: string | null;
+  valor_resultado: string | null;
+  /** Enriquecido server-side: primer documento del catálogo por nombre (ORDER BY id ASC). */
+  tipo_resultado: string | null;
+}
+
+/** consultarDocumentosPersona[P]: soloPublicos=true replica la variante sin DOC_PRIVADO. */
+export async function getDocumentosPersona(
+  id: number,
+  categoria: CategoriaDocumento,
+  soloPublicos: boolean,
+): Promise<DocumentoPersonaRow[]> {
+  const { data, error } = await supabase.rpc('persona_documentos' as never, {
+    p_id: id,
+    p_categoria: categoria,
+    p_solo_publicos: soloPublicos,
+  } as never);
+  if (error) throw error;
+  return (data ?? []) as DocumentoPersonaRow[];
+}
+
+export interface DocumentoRequeridoRow {
+  id: number;
+  nombre: string | null;
+  id_cargo: number | null;
+  requerido: boolean | null;
+}
+
+/** documentosRequeridosCargo[P]: catálogo requerido por cargos y categoría. */
+export async function getDocumentosRequeridos(
+  categoria: CategoriaDocumento,
+  idsCargo: number[],
+  soloPublicos: boolean,
+): Promise<DocumentoRequeridoRow[]> {
+  const { data, error } = await supabase.rpc('persona_documentos_requeridos' as never, {
+    p_categoria: categoria,
+    p_ids_cargo: idsCargo,
+    p_solo_publicos: soloPublicos,
+  } as never);
+  if (error) throw error;
+  return (data ?? []) as DocumentoRequeridoRow[];
+}
+
+/** editar-doc: SOLO actualiza fecha_vencimiento (guardarDocumentosPersona fiel). */
+export async function guardarFechaDocumento(id: number, fecha: string | null) {
+  const { error } = await supabase.rpc('documento_persona_guardar_fecha' as never, {
+    p_id: id,
+    p_fecha: fecha,
+  } as never);
+  if (error) throw error;
+}
+
+/** PUT /api/resultado-documento: UPDATE valor_resultado WHERE id. */
+export async function guardarResultadoDocumento(id: number, valor: string) {
+  const { error } = await supabase.rpc('documento_persona_guardar_resultado' as never, {
+    p_id: id,
+    p_valor: valor,
+  } as never);
+  if (error) throw error;
+}
+
+/** DELETE /api/eliminarArchivoPersona/{id} — el original lo dispara sin confirmar. */
+export async function eliminarDocumentoPersona(id: number) {
+  const { error } = await supabase.rpc('documento_persona_eliminar' as never, { p_id: id } as never);
+  if (error) throw error;
+}
+
+/** DELETE /api/eliminarArchivosBasura — filas con id_persona NULL (botón Guardar). */
+export async function limpiarDocumentosHuerfanos() {
+  const { error } = await supabase.rpc('documentos_persona_limpiar_huerfanos' as never);
+  if (error) throw error;
 }
 
 // Los RPC de negocio (asignarPersonaProyecto, guardarBloqueo, oficializar, etc.)
