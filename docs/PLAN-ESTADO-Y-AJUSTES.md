@@ -58,6 +58,23 @@ El plan marca **pgTAP bloqueante para cutover (§9.5/§14)** y no existe ninguna
 Listas/detalles existen, pero las **mutaciones con reglas** (asociar/oficializar/bloquear/cambiar estado) — el corazón de docnomina — casi no están. El primer port real de negocio con lógica backend-exacta es `notificaciones_documentos` (regla 45 días / estados En Revisión-Activo-Reclutamiento).
 **Ajuste:** priorizar el **inventario y port de los 40+ RPC** (plan §10) por dominio, cada uno con test de equivalencia. Es la columna vertebral y va con retraso relativo a las vistas.
 
+### 3.5b El original siguió evolucionando — drift del oráculo (2026-07-14)
+
+`git fetch` sobre `ormorenoo/docnomina` (2026-07-14): la producción recibió **~40 commits** (2026-06-05 → 2026-07-14, autor Leogg1) posteriores al snapshot del plan. El clon local (`RepoDocnomina/docnomina`, rama `develop`) quedó **al día** (HEAD `887e4b2`, 2026-07-14) — las specs de las sub-páginas Documentos/Servicios (hito 2026-07-11) ya se extrajeron del fuente actualizado.
+
+**Impacto en lo ya portado:**
+- `d4d5ff5` (2026-07-14) — *"no desasociar de servicios/despachos al guardar ficha o cargar documentos"*: la cascada de desvinculación ahora corre SOLO en el cambio explícito de estado (`actualizarEstadoPersona`, param `eliminarAsociaciones=true`), nunca en el guardado general de ficha. **El port ya cumple esta semántica** (verificado 2026-07-14): `updatePersona` no toca `estado_persona` y la cascada vive solo en `persona_cambiar_estado` (0025). Divergencia menor aceptada: el original registra `persona_historico` si el estado del form difiere al guardar ficha; en el port el estado no es editable desde la ficha.
+- Los ports de Despacho (edición en línea `e6951eb`, columnas de acción `dec288a`) y Asociar (badge Nuevo `d6ad55e`) se extrajeron con esos commits ya presentes ✅. Conviene un **pase de re-verificación de paridad** de los listados clonados contra el oráculo actualizado (p.ej. `ed47c99` orden de Servicios por fecha inicio + sort por clic).
+
+**Features NUEVAS del original que el plan no contemplaba (añadir al roadmap):**
+1. **Licencias Spot** (`e46b3b5`,`983ccf3`,`6acb6c1`,`2e24bf8`) — dominio nuevo: gestor/visor de licencias MEL/Gesta del personal Spot, vista lista/tarjetas, menú Reportabilidad. → Fase 4.
+2. **Carga masiva de personal desde Excel** en Asociar (`1ab1556`) + **export de no agregados** (`887e4b2`). → Fase 5 (import Excel).
+3. **API integración Gesta OS** ya concreta (Fase 7): `GET /api/integracion/servicios` (activos), `/servicios/{id}/personal`, evaluaciones por RUT, turnos día/noche (`53bded7`), `stats/login` + total personas (`e0f833e`,`8d5762c`), estado en `TrabajadorIntegracionDTO` (`2f85b0c`).
+4. **BI dashboards implementados en el original** (`b8936fe`,`ff77744`,`9a025ad`) — Fase 6 ahora tiene referencia visual/funcional concreta (visor ALTA operacional + GESTA EPP con filtros/export).
+5. Menores: snapshot PNG del despacho (`4cb2bef`,`67be3ac`), descargar foto del trabajador (`3ea6da6`), descarga de informes/documentos en navegador (`bebcc1f`,`471bf78`,`b13a24f`), JWT en localStorage (`23c5077`), buscador de mochila en entrega (`c4b7069`), Excel detalle mochila (`39df488`).
+
+**Regla operativa nueva:** antes de cada extracción de specs, `git pull` en `RepoDocnomina/docnomina` (develop) — el oráculo es un blanco móvil.
+
 ### 3.5 Decisiones abiertas (§18) ya resueltas
 | §18 | Decisión tomada |
 |---|---|
