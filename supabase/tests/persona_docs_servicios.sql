@@ -16,7 +16,7 @@ create temp table tap (seq serial, t text);
 grant select, insert on tap to authenticated;
 grant usage, select on sequence tap_seq_seq to authenticated;
 
-insert into tap(t) select plan(18);
+insert into tap(t) select plan(20);
 
 -- ---- Fixtures (como postgres, antes de bajar a authenticated) ----
 insert into public.persona (id, nombre_completo, empresa)
@@ -158,6 +158,27 @@ set local request.jwt.claims = '{"app_roles":["ROLE_ADMIN"]}';
 insert into tap(t) select is(
   (select count(*) from public.documentos_persona dp where dp.id_persona is null and dp.nombre_documento = 'PGTAP HUERFANO'),
   0::bigint, 'limpiar_huerfanos: elimina filas con id_persona NULL');
+
+-- 17) documento_persona_cargar (0034): rol sin permiso denegado
+set local request.jwt.claims = '{"app_roles":["OPERACIONES"]}';
+insert into tap(t) select throws_ok(
+  $$select public.documento_persona_cargar(990000001, 'PGTAP DOC PUB', '990000001/x.pdf', now()::timestamp)$$,
+  'permiso denegado para cargar documentos',
+  'cargar: OPERACIONES denegado');
+
+-- 18) …y VALIDADOR_RRHH crea la fila CON fecha (subida un-paso del port).
+-- La llamada va en sentencia separada: el snapshot de una misma sentencia
+-- no ve el INSERT de la función volátil.
+set local request.jwt.claims = '{"app_roles":["VALIDADOR_RRHH"],"app_empresa":"GESTA SERVICIOS A LA MINERIA SPA"}';
+create temp table pgtap_cargado as
+  select public.documento_persona_cargar(
+    990000001, 'PGTAP DOC CARGADO', '990000001/PGTAP DOC CARGADO-1.pdf', '2030-01-01'::timestamp) as id;
+insert into tap(t) select is(
+  (select dp.documento || '|' || (dp.fecha_vencimiento is not null)::text
+     from public.documentos_persona dp
+    where dp.id = (select c.id from pgtap_cargado c)),
+  '990000001/PGTAP DOC CARGADO-1.pdf|true',
+  'cargar: crea fila con ruta de Storage y fecha en un paso');
 
 insert into tap(t) select * from finish();
 reset role;

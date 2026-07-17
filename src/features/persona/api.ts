@@ -286,6 +286,8 @@ export interface DocumentoPersonaRow {
   valor_resultado: string | null;
   /** Enriquecido server-side: primer documento del catálogo por nombre (ORDER BY id ASC). */
   tipo_resultado: string | null;
+  /** Ruta del archivo: Storage ("{idPersona}/…pdf") o filesystem legacy (sin binario). */
+  documento: string | null;
 }
 
 /** consultarDocumentosPersona[P]: soloPublicos=true replica la variante sin DOC_PRIVADO. */
@@ -341,6 +343,43 @@ export async function guardarResultadoDocumento(id: number, valor: string) {
     p_valor: valor,
   } as never);
   if (error) throw error;
+}
+
+/** ¿La ruta es un objeto de Storage del port? (legacy filesystem = sin binario) */
+export function esDocumentoStorage(ruta: string | null | undefined): boolean {
+  return !!ruta && /^[0-9]+\//.test(ruta);
+}
+
+/**
+ * Sube el PDF al bucket privado y crea la fila CON fecha en un paso
+ * (cargarDocumento + guardarDocumentosPersona del original, atómico respecto
+ * a la fila — desviación deliberada del flujo 2-pasos que dejaba huérfanos).
+ */
+export async function subirDocumentoPersona(
+  idPersona: number,
+  nombreDocumento: string,
+  file: File,
+  fecha: string,
+): Promise<void> {
+  const ruta = `${idPersona}/${nombreDocumento.trim()}-${Date.now()}.pdf`;
+  const { error: upErr } = await supabase.storage
+    .from('documentos-persona')
+    .upload(ruta, file, { contentType: 'application/pdf' });
+  if (upErr) throw upErr;
+  const { error } = await supabase.rpc('documento_persona_cargar' as never, {
+    p_id_persona: idPersona,
+    p_nombre_documento: nombreDocumento,
+    p_ruta: ruta,
+    p_fecha: fecha,
+  } as never);
+  if (error) throw error;
+}
+
+/** URL firmada (60s) para previsualizar un PDF de Storage. */
+export async function urlDocumentoPersona(ruta: string): Promise<string> {
+  const { data, error } = await supabase.storage.from('documentos-persona').createSignedUrl(ruta, 60);
+  if (error) throw error;
+  return data.signedUrl;
 }
 
 /** DELETE /api/eliminarArchivoPersona/{id} — el original lo dispara sin confirmar. */

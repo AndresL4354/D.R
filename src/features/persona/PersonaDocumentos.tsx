@@ -18,9 +18,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useDocumentosCategoria, useIdsCargoPersona, usePersona } from './hooks';
 import {
   eliminarDocumentoPersona,
+  esDocumentoStorage,
   guardarFechaDocumento,
   guardarResultadoDocumento,
   limpiarDocumentosHuerfanos,
+  subirDocumentoPersona,
+  urlDocumentoPersona,
   type CategoriaDocumento,
   type DocumentoPersonaRow,
   type DocumentoRequeridoRow,
@@ -40,8 +43,9 @@ import { useRole } from '@/features/auth/useRole';
  * Eliminar gateado por rol SOLO en Generales (asimetría fiel). Eliminar va
  * sin confirmación y se dispara incluso con id 0 (fiel). El botón Guardar
  * solo limpia huérfanos y navega atrás (fiel).
- * Stubs con infra pendiente: subir PDF (Storage, Fase 5), ver PDF (binarios
- * sin migrar, Fase 8) y Descargar documentos ZIP (Fase 5).
+ * Subir y ver PDF funcionan contra Supabase Storage (0034) para documentos
+ * nuevos; los 48k registros LEGACY siguen sin binario (migración Fase 8) y
+ * su "ver" muestra el aviso. Descargar documentos ZIP sigue stub (Fase 5).
  */
 
 interface DocUi extends DocumentoPersonaRow {
@@ -87,6 +91,7 @@ function placeholder(req: DocumentoRequeridoRow): DocUi {
     tipo_documento: null,
     valor_resultado: null,
     tipo_resultado: null,
+    documento: null,
     semaforo: null,
     titulo: null,
   };
@@ -222,7 +227,7 @@ export function Component() {
     if (el) el.value = '';
   };
 
-  const onFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onFileSelected = (e: React.ChangeEvent<HTMLInputElement>, doc: DocUi, categoria: CategoriaDocumento) => {
     const file = e.target.files?.[0];
     if (!file) return;
     // Validaciones fieles al original (fecha primero, luego tipo PDF):
@@ -235,13 +240,29 @@ export function Component() {
       toast.warning('Solo se permiten archivos pdf');
       return; // el original NO limpia el input en este caso (quirk)
     }
-    // La subida real requiere Supabase Storage (cargarDocumento) — Fase 5.
-    toast.info('La carga del PDF requiere Storage — disponible en Fase 5.');
-    clearFileInput();
+    // Subida real (Storage + fila con fecha). Al terminar se re-consulta la
+    // categoría: la fila llega del server con fecha y semáforo recalculado.
+    // (No replicamos el splice destructivo transitorio de isArrayModificado.)
+    void subirDocumentoPersona(personaId, doc.nombre_documento ?? '', file, fechaCompartida)
+      .then(() => {
+        void qc.invalidateQueries({ queryKey: ['persona', 'documentos', personaId, categoria] });
+      })
+      .catch(() => {
+        toast.warning('Se presento un error al subir el archivo, intentelo nuevamente');
+      })
+      .finally(() => clearFileInput());
   };
 
-  const ver = () =>
-    toast.info('Los PDF del sistema antiguo aún no están migrados a Storage (Fase 8).');
+  const ver = (doc: DocUi) => {
+    if (!esDocumentoStorage(doc.documento)) {
+      // Registros legacy: la ruta apunta al filesystem del server antiguo.
+      toast.info('Los PDF del sistema antiguo aún no están migrados a Storage (Fase 8).');
+      return;
+    }
+    void urlDocumentoPersona(doc.documento!)
+      .then((url) => window.open(url))
+      .catch(() => toast.warning('Se presento un error al subir en la previsualización del archivo'));
+  };
 
   const descargarDocumentos = () => toast.info('Generación de documentos disponible en Fase 5.');
 
@@ -434,14 +455,18 @@ export function Component() {
                         <td>
                           {!doc.fecha_vencimiento ? (
                             canEditar ? (
-                              <input type="file" accept="application/pdf" onChange={onFileSelected} />
+                              <input
+                                type="file"
+                                accept="application/pdf"
+                                onChange={(e) => onFileSelected(e, doc, categoria)}
+                              />
                             ) : null
                           ) : (
                             <button
                               type="button"
                               className="btn-icon btn-icon--primary"
                               title={doc.titulo ?? undefined}
-                              onClick={ver}
+                              onClick={() => ver(doc)}
                             >
                               <Eye size={16} />
                             </button>
