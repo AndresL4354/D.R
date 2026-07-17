@@ -9,7 +9,7 @@ Cada función vive en `supabase/functions/<nombre>/index.ts` y se despliega con
 |---|---|---|---|---|
 | `sso-consume` | 1 | ✅ implementada | Canje del launch token de Gesta OS → magic link (§13.1) | pública (`verify_jwt=false`; valida el token contra el hub) |
 | `sso-users` | 1 | ✅ implementada | Provisioning de usuarios por `id_gesta_os` + catálogo de authorities (§13.2) | `X-Internal-Api-Key` |
-| `integracion-*` | 7 | ⬜ pendiente | Integración por RUT (servicio/ficha/historial/evaluaciones) | `X-Internal-Api-Key` |
+| `integracion` | 7 | ✅ implementada | 9 GET server-to-server: trabajadores por id/RUT (+servicio-actual, +evaluaciones), servicios activos, personal por servicio, turnos, stats/login (caché 60s) — clon de `IntegracionResource` | `X-Internal-Api-Key` |
 | `pdf-ficha`, `pdf-*` | 5 | ⬜ pendiente | Generación de PDF (ficha, evaluaciones, nómina) (§12) | sesión usuario |
 | `email-notificacion` | 5 | ⬜ pendiente | Notificaciones vía Resend (§12) | sesión / service |
 | `bi-*` | 6 | ⬜ pendiente | Endpoints BI con cross-filtering imperativo (§11) | sesión usuario |
