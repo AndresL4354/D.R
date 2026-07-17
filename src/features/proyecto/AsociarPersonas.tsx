@@ -14,8 +14,10 @@ import {
   UserPlus,
   Users,
 } from 'lucide-react';
-import { ClipboardList, FileText } from 'lucide-react';
+import { ClipboardList, FileSpreadsheet, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+import { CargaMasivaDialog } from './CargaMasivaDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { RowActionsMenu, type RowAction } from '@/components/common/RowActionsMenu';
 import { useAuth } from '@/features/auth/useAuth';
@@ -94,6 +96,9 @@ export function Component() {
   const backup = rows.filter((r) => r.estado === 'BACKUP');
   const eliminados = rows.filter((r) => r.estado === 'ELIMINADO');
   const idsPreseleccionadas = nomina.filter((r) => r.estado === 'PRESELECCIONADA').map((r) => r.idPersona);
+
+  const qc = useQueryClient();
+  const [cargaMasivaOpen, setCargaMasivaOpen] = useState(false);
 
   const busy =
     asociarMut.isPending ||
@@ -449,9 +454,35 @@ export function Component() {
               <button type="button" className="btn btn-primary" disabled={!personaSel || !cargoAsignar || busy} onClick={doAsignar}>
                 <Plus size={16} /> Asignar empleado
               </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                style={{ marginLeft: 'var(--app-space-2)' }}
+                disabled={busy}
+                onClick={() => setCargaMasivaOpen(true)}
+                title="Asociar personal desde un Excel (RUT / NOMBRE / CARGO)"
+              >
+                <FileSpreadsheet size={16} /> Carga masiva
+              </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Carga masiva desde Excel (wizard de 4 pasos) */}
+      {cargaMasivaOpen && p && (
+        <CargaMasivaDialog
+          proyecto={p}
+          personal={rows}
+          usuarioCreacion={login}
+          onClose={(reason) => {
+            setCargaMasivaOpen(false);
+            if (reason === 'success') {
+              toast.success('Carga masiva finalizada. Se actualizó la nómina del servicio.');
+              void qc.invalidateQueries({ queryKey: ['proyecto'] });
+            }
+          }}
+        />
       )}
 
       {loadingPersonal ? (

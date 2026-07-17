@@ -368,3 +368,61 @@ export async function personaEnDespacho(idPersona: number, idProyecto: number): 
   if (error) throw error;
   return Boolean(data);
 }
+
+// ---- Carga masiva desde Excel (0032 — clon de asociarPersonasProyectoMasivo) ----
+
+export interface AsociacionMasivaFila {
+  rut: string;
+  id_cargo: number | null;
+}
+
+export interface AsociacionMasivaResultado {
+  rut: string | null;
+  id_persona: number | null;
+  nombre_persona: string | null;
+  resultado: string | null;
+  detalle: string | null;
+}
+
+export async function asociarPersonasProyectoMasivo(
+  idProyecto: number,
+  usuario: string,
+  filas: AsociacionMasivaFila[],
+): Promise<AsociacionMasivaResultado[]> {
+  const { data, error } = await supabase.rpc('asociar_personas_proyecto_masivo' as never, {
+    p_id_proyecto: idProyecto,
+    p_usuario: usuario,
+    p_filas: filas,
+  } as never);
+  if (error) throw error;
+  return (data ?? []) as AsociacionMasivaResultado[];
+}
+
+export interface PersonaCatalogoRut {
+  id: number;
+  numero_id: string | null;
+  nombre_completo: string | null;
+  estado_persona: string | null;
+}
+
+/**
+ * Catálogo completo de personas visibles (para la vista previa del wizard,
+ * como `this.personas` de la pantalla Asociar del original). PostgREST corta
+ * en 1000 filas por request → se pagina hasta agotar.
+ */
+export async function getPersonasCatalogoRut(): Promise<PersonaCatalogoRut[]> {
+  const out: PersonaCatalogoRut[] = [];
+  const page = 1000;
+  for (let from = 0; ; from += page) {
+    const { data, error } = await supabase
+      .from('persona')
+      .select('id, numero_id, nombre_completo, estado_persona')
+      .order('id')
+      .range(from, from + page - 1);
+    if (error) throw error;
+    const rows = data ?? [];
+    out.push(...rows);
+    if (rows.length < page) break;
+  }
+  return out;
+}
