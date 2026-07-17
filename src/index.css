@@ -1166,3 +1166,8 @@
   border-color: var(--app-color-warning);
   color: var(--app-color-warning);
 }
+.app-alert--danger {
+  background: var(--app-color-danger-bg);
+  border-color: var(--app-color-danger);
+  color: var(--app-color-danger);
+}

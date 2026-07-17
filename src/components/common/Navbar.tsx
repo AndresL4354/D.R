@@ -217,6 +217,23 @@ export function Navbar() {
               show={hasRole('REP_VENCIMIENTOS')}
               onNavigate={closeMenu}
             />
+            {/* Licencias Spot (983ccf3: movido al menú Reportabilidad) */}
+            <DropItem
+              to="/licencias-spot"
+              icon="logo-reporte-vencimientos"
+              label="Licencias Spot"
+              show={hasAnyRole([
+                'ROLE_ADMIN',
+                'SUPERADMINISTRADOR',
+                'SUPERADMINISTRADOR BP',
+                'RECLUTADOR',
+                'OPERACIONES',
+                'RRHH',
+                'ENCARGADO_RRHH',
+                'VALIDADOR_RRHH',
+              ])}
+              onNavigate={closeMenu}
+            />
             <DropItem
               to="/dashboard"
               icon="logo-reporta"

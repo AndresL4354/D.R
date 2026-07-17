@@ -190,28 +190,46 @@ export type Database = {
       }
       auditoria_estado_despacho: {
         Row: {
+          columna: string | null
+          confirmado: boolean | null
           estado_anterior: string | null
           estado_nuevo: string | null
           fecha: string
           id: number
-          id_despacho: number
+          id_despacho: number | null
+          id_persona: number | null
+          rut: string | null
           usuario: string | null
+          valor_anterior: string | null
+          valor_nuevo: string | null
         }
         Insert: {
+          columna?: string | null
+          confirmado?: boolean | null
           estado_anterior?: string | null
           estado_nuevo?: string | null
           fecha?: string
           id?: number
-          id_despacho: number
+          id_despacho?: number | null
+          id_persona?: number | null
+          rut?: string | null
           usuario?: string | null
+          valor_anterior?: string | null
+          valor_nuevo?: string | null
         }
         Update: {
+          columna?: string | null
+          confirmado?: boolean | null
           estado_anterior?: string | null
           estado_nuevo?: string | null
           fecha?: string
           id?: number
-          id_despacho?: number
+          id_despacho?: number | null
+          id_persona?: number | null
+          rut?: string | null
           usuario?: string | null
+          valor_anterior?: string | null
+          valor_nuevo?: string | null
         }
         Relationships: []
       }
@@ -1375,6 +1393,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      licencia_spot: {
+        Row: {
+          cargo: string | null
+          id: number
+          licencia_gesta: boolean | null
+          nombre: string | null
+          observaciones: string | null
+          rut: string | null
+          updated_at: string | null
+          updated_by: string | null
+          vencimiento_mel: string | null
+          vencimiento_texto: string | null
+        }
+        Insert: {
+          cargo?: string | null
+          id?: number
+          licencia_gesta?: boolean | null
+          nombre?: string | null
+          observaciones?: string | null
+          rut?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          vencimiento_mel?: string | null
+          vencimiento_texto?: string | null
+        }
+        Update: {
+          cargo?: string | null
+          id?: number
+          licencia_gesta?: boolean | null
+          nombre?: string | null
+          observaciones?: string | null
+          rut?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          vencimiento_mel?: string | null
+          vencimiento_texto?: string | null
+        }
+        Relationships: []
       }
       mensaje: {
         Row: {
@@ -2563,8 +2620,109 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      acreditar_trabajador: {
+        Args: { p_id_persona: number; p_id_proyecto: number }
+        Returns: undefined
+      }
+      asociar_persona_proyecto: {
+        Args: {
+          p_cargo: string
+          p_id_cargo: number
+          p_id_persona: number
+          p_id_proyecto: number
+          p_usuario: string
+        }
+        Returns: undefined
+      }
+      asociar_personas_proyecto_masivo: {
+        Args: { p_filas: Json; p_id_proyecto: number; p_usuario: string }
+        Returns: {
+          detalle: string
+          id_persona: number
+          nombre_persona: string
+          resultado: string
+          rut: string
+        }[]
+      }
       auth_empresa: { Args: never; Returns: string }
+      backup_asociado: {
+        Args: { p_id_persona: number; p_id_proyecto: number; p_motivo: string }
+        Returns: undefined
+      }
+      cambiar_cargo_asociado: {
+        Args: {
+          p_cargo: string
+          p_id_cargo: number
+          p_id_persona: number
+          p_id_proyecto: number
+        }
+        Returns: undefined
+      }
+      cambiar_estado_asociado: {
+        Args: {
+          p_estado: string
+          p_estado_filtro: string
+          p_id_persona: number
+          p_id_proyecto: number
+        }
+        Returns: string
+      }
+      cargos_listado: {
+        Args: { p_nombre?: string }
+        Returns: {
+          descripcion: string
+          documentos: string
+          faenas: string
+          id: number
+          nombre: string
+        }[]
+      }
+      cargos_proyecto_guardar: {
+        Args: { p_cargos: Json; p_id: number }
+        Returns: undefined
+      }
+      cargos_proyecto_listar: {
+        Args: { p_id: number }
+        Returns: {
+          cantidad: number
+          cantidad_noche: number
+          id: number
+          id_cargo: number
+          nombre_cargo: string
+          turnos_efectivos: number
+        }[]
+      }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      despacho_eliminar: { Args: { p_id: number }; Returns: undefined }
+      despacho_eliminar_accion: {
+        Args: { p_id_accion: number }
+        Returns: undefined
+      }
+      despacho_eliminar_trabajador: {
+        Args: { p_id_trabajador_despacho: number }
+        Returns: undefined
+      }
+      despacho_finalizar: { Args: { p_id: number }; Returns: undefined }
+      despacho_registrar_accion: {
+        Args: {
+          p_accion: string
+          p_aprobado: boolean
+          p_comentario: string
+          p_id_trabajador_despacho: number
+          p_pendiente: boolean
+          p_usuario: string
+        }
+        Returns: undefined
+      }
+      despacho_toggle_estado: {
+        Args: {
+          p_accion: string
+          p_confirmado: boolean
+          p_id_trabajador_despacho: number
+          p_marcar: boolean
+        }
+        Returns: undefined
+      }
       despachos_listado: {
         Args: {
           p_estado?: string
@@ -2594,6 +2752,20 @@ export type Database = {
           transporte: number
         }[]
       }
+      documento_persona_eliminar: { Args: { p_id: number }; Returns: undefined }
+      documento_persona_guardar_fecha: {
+        Args: { p_fecha: string; p_id: number }
+        Returns: undefined
+      }
+      documento_persona_guardar_resultado: {
+        Args: { p_id: number; p_valor: string }
+        Returns: undefined
+      }
+      documentos_persona_limpiar_huerfanos: { Args: never; Returns: undefined }
+      eliminar_asociado: {
+        Args: { p_id_persona: number; p_id_proyecto: number; p_motivo: string }
+        Returns: undefined
+      }
       entregas_listado: {
         Args: {
           p_fecha_fin?: string
@@ -2619,6 +2791,49 @@ export type Database = {
       }
       es_alta: { Args: never; Returns: boolean }
       es_gesta: { Args: never; Returns: boolean }
+      evaluacion_eliminar: { Args: { p_id: number }; Returns: undefined }
+      evaluacion_existente: {
+        Args: { p_id_persona: number; p_id_proyecto: number; p_tipo: string }
+        Returns: Json
+      }
+      evaluacion_guardar: {
+        Args: {
+          p_comentario: string
+          p_horas_vertical: number
+          p_id: number
+          p_id_persona: number
+          p_id_proyecto: number
+          p_levanta_mano: string
+          p_mejora: string
+          p_observacion: string
+          p_peticion: string
+          p_respuestas: Json
+          p_tipo: string
+        }
+        Returns: number
+      }
+      evaluaciones_persona: {
+        Args: { p_id_persona: number; p_tipo: string }
+        Returns: Json
+      }
+      evaluaciones_proyecto: {
+        Args: { p_id_proyecto: number; p_tipo: string }
+        Returns: Json
+      }
+      faenas_listado: {
+        Args: { p_nombre?: string }
+        Returns: {
+          descripcion: string
+          empresa: string
+          id: number
+          nombre: string
+          usuarios: string
+        }[]
+      }
+      gestion_temprana_toggle: {
+        Args: { p_id_persona: number; p_id_proyecto: number; p_usuario: string }
+        Returns: boolean
+      }
       has_role: { Args: { r: string }; Returns: boolean }
       inspecciones_mochila: {
         Args: { p_id_mochila: number }
@@ -2629,6 +2844,49 @@ export type Database = {
           servicio: string
           trabajador: string
           usuario_creacion: string
+        }[]
+      }
+      licencia_rut_normalizar: { Args: { p_rut: string }; Returns: string }
+      licencia_spot_eliminar: { Args: { p_id: number }; Returns: undefined }
+      licencia_spot_guardar: {
+        Args: {
+          p_cargo: string
+          p_id: number
+          p_licencia_gesta: boolean
+          p_nombre: string
+          p_observaciones: string
+          p_rut: string
+          p_usuario: string
+          p_vencimiento_mel: string
+          p_vencimiento_texto: string
+        }
+        Returns: number
+      }
+      licencia_spot_puede_editar: { Args: never; Returns: boolean }
+      licencias_spot_buscar_personas: {
+        Args: { p_q: string }
+        Returns: {
+          nombre: string
+          rut: string
+        }[]
+      }
+      licencias_spot_listar: {
+        Args: never
+        Returns: {
+          cargo: string
+          ciudad: string
+          dias_restantes: number
+          estado_mel: string
+          id: number
+          licencia_gesta: boolean
+          nombre: string
+          observaciones: string
+          puede_conducir: boolean
+          rut: string
+          updated_at: string
+          updated_by: string
+          vencimiento_mel: string
+          vencimiento_texto: string
         }[]
       }
       mochilas_listado: {
@@ -2647,10 +2905,78 @@ export type Database = {
           vencidos: number
         }[]
       }
+      oficializar_nomina: {
+        Args: { p_id_proyecto: number; p_ids_persona: number[] }
+        Returns: string
+      }
+      persona_cambiar_estado: {
+        Args: { p_estado: string; p_id: number; p_usuario: string }
+        Returns: undefined
+      }
       persona_comunas: {
         Args: never
         Returns: {
           comuna: string
+        }[]
+      }
+      persona_documentos: {
+        Args: { p_categoria: string; p_id: number; p_solo_publicos: boolean }
+        Returns: {
+          fecha_vencimiento: string
+          id: number
+          nombre_documento: string
+          tipo_documento: string
+          tipo_resultado: string
+          valor_resultado: string
+          vencido: boolean
+        }[]
+      }
+      persona_documentos_requeridos: {
+        Args: {
+          p_categoria: string
+          p_ids_cargo: number[]
+          p_solo_publicos: boolean
+        }
+        Returns: {
+          id: number
+          id_cargo: number
+          nombre: string
+          requerido: boolean
+        }[]
+      }
+      persona_eliminar: { Args: { p_id: number }; Returns: undefined }
+      persona_en_despacho: {
+        Args: { p_id_persona: number; p_id_proyecto: number }
+        Returns: boolean
+      }
+      persona_guardar_bloqueo: {
+        Args: {
+          p_descripcion: string
+          p_estado_bloqueo: string
+          p_id: number
+          p_motivo: string
+          p_usuario: string
+        }
+        Returns: undefined
+      }
+      persona_servicios: {
+        Args: { p_id: number }
+        Returns: {
+          acreditado: boolean
+          actual: boolean
+          estado: string
+          faena: string
+          fecha_creacion: string
+          id_proyecto: number
+          nombre_cargo: string
+          nombre_servicio: string
+          nuevo: boolean
+        }[]
+      }
+      persona_verificar_documentos: {
+        Args: { p_id: number; p_ids_cargo: number[] }
+        Returns: {
+          documento: string
         }[]
       }
       persona_visible: { Args: { pid: number }; Returns: boolean }
@@ -2678,7 +3004,29 @@ export type Database = {
           total: number
         }[]
       }
+      preguntas_por_tipo: {
+        Args: { p_tipo: string }
+        Returns: {
+          id: number
+          pregunta: string
+          tipo: string
+          titulo: string
+        }[]
+      }
+      proyecto_activar: { Args: { p_id: number }; Returns: undefined }
+      proyecto_eliminar: { Args: { p_id: number }; Returns: undefined }
+      proyecto_evaluaciones_pendientes: {
+        Args: { p_id: number }
+        Returns: number
+      }
+      proyecto_finalizar: { Args: { p_id: number }; Returns: undefined }
       proyecto_visible: { Args: { pid: number }; Returns: boolean }
+      puede_editar_estados_personal: { Args: never; Returns: boolean }
+      puede_gestionar_accion: { Args: { p_accion: string }; Returns: boolean }
+      reasociar_persona: {
+        Args: { p_id_persona: number; p_id_proyecto: number; p_motivo: string }
+        Returns: undefined
+      }
       tiene_rol_despacho: { Args: never; Returns: boolean }
     }
     Enums: {
